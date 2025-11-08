@@ -1,0 +1,6 @@
+flask
+flask-cors
+flask-sock
+python-dotenv
+aiohttp
+websockets
