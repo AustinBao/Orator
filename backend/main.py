@@ -18,15 +18,7 @@ app = Flask(__name__)
 CORS(app)
 sock = Sock(app)
 
-# Load script from file and create analyzer
-script_path = "audio/script.txt"
-try:
-    with open(script_path, 'r', encoding='utf-8') as f:
-        presentation_script = f.read()
-    presentation_analyzer = PresentationAnalyzer(presentation_script)
-except Exception as e:
-    print(f"Could not load script.txt: {e}")
-    presentation_analyzer = None
+presentation_analyzer = PresentationAnalyzer("")
 
 @app.route("/")
 def home():
@@ -55,7 +47,9 @@ def save_transcript():
     try:
         transcript = request.get_json()
         print("Received transcript:", transcript)
-    
+        global presentation_analyzer
+        presentation_analyzer = PresentationAnalyzer(transcript)
+        
     except Exception as e:
         return jsonify({
             "status": "error",
