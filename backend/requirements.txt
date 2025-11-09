@@ -4,3 +4,4 @@ flask-sock
 python-dotenv
 aiohttp
 websockets
+google-cloud-speech
