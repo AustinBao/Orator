@@ -7,6 +7,5 @@ websockets
 google-cloud-speech
 brainflow
 numpy
-time
 pandas
 scipy

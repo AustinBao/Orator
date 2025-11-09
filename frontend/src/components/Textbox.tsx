@@ -109,6 +109,60 @@ export default function Textbox(){
         return <>{result}</>;
     };
     
+    const getSavedTranscript = () => {
+    if (!transcript) {
+        return "";
+    }
+
+    // If there are no highlights, return the original transcript (or uppercase the whole thing if preferred)
+    if (!highlights.length) {
+        return transcript; // You could use transcript.toUpperCase() here if you want *everything* uppercase when saved
+    }
+
+    const result: string[] = [];
+    let pos = 0;
+
+    highlights.forEach((h) => {
+        // 1. Add the text *before* the highlight (normal case)
+        result.push(transcript.slice(pos, h.start));
+
+        // 2. Add the highlighted text (in UPPER CASE)
+        const highlightedSegment = transcript.slice(h.start, h.end);
+        result.push(highlightedSegment.toUpperCase());
+
+        // 3. Move the pointer to the end of the highlight
+        pos = h.end;
+    });
+
+    // 4. Add the remaining text after the last highlight
+    result.push(transcript.slice(pos));
+
+    return result.join('');
+    };
+
+    const handleSendTranscript = async () => {
+        const finalTranscript = getSavedTranscript();
+        console.log("Transcript to save:", finalTranscript);
+        
+        try {
+            const response = await fetch("http://127.0.0.1:5000/save", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify(finalTranscript),
+        });
+
+        const result = await response.json();
+        console.log("Response from Flask:", result);
+        alert("Saved successfully!");
+        } catch (error) {
+        console.error("Error sending data:", error);
+        }
+    };
+    
+
+
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === "Enter") {
             e.preventDefault();
@@ -168,7 +222,7 @@ export default function Textbox(){
         {showButtons && (
         <div className="flex gap-2 mt-4">
             
-            <button className="bg-blue-600 text-white font-semibold hover:bg-blue-800 px-4 py-2 rounded">Send Transcript</button>
+            <button className="bg-blue-600 text-white font-semibold hover:bg-blue-800 px-4 py-2 rounded" onClick={handleSendTranscript}>Send Transcript</button>
 
             <button 
             className={`px-4 py-2 rounded font-semibold ${

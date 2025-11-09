@@ -27,6 +27,18 @@ def client_audio():
     else:
         return jsonify({"status": "error", "message": "No audio file received"}), 400
 
+@app.route('/transcript', methods=['POST'])
+def save_transcript():
+    try:
+        transcript = request.get_json()
+        print("Received transcript:", transcript)
+    
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to receive transcription: {str(e)}"
+        })
+    return jsonify({"status": "success", "received": ""})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
