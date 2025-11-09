@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function NavBar({ ProductDesc, AboutUs }) {
+export default function NavBar({ ProductDesc, AboutUs, HowItWorks }) {
 
   const navigate = useNavigate();
 
@@ -24,6 +24,7 @@ export default function NavBar({ ProductDesc, AboutUs }) {
   return (
     <div ref={navBarRef} className="fixed outline-solid outline-sky-100 bg-white backdrop-blur-md px-8 py-2 mx-60 my-2 rounded-full space-x-20">
       <button className={buttonClass} onClick={() => scrollToElement(ProductDesc) }>Orator AI</button>
+      <button className={buttonClass} onClick={() => scrollToElement(HowItWorks)}>How it Works</button>
       <button className={buttonClass} onClick={() => scrollToElement(AboutUs)}>About Us</button>
       <button className="text-white bg-gradient-to-br from-pink-500 to-orange-400 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-pink-200 dark:focus:ring-pink-800 font-medium rounded-full px-6 py-2 text-center" onClick={() => navigate("/app") }>Get Started</button>
     </div>
