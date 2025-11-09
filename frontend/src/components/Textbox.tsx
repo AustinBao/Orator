@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import pdfToText from 'react-pdftotext';
 
 interface HighlightRange {
     start: number;
@@ -18,13 +19,20 @@ export default function Textbox(){
 
     function handleFileChange(e: React.ChangeEvent<HTMLInputElement>){
         const selected = e.target.files?.[0];
-        if (selected && selected.type == "application/pdf"){
-            console.log("PDF file", selected.name)
-            setFile(selected)
-            {file}
-        } else {
-            console.log("Not a pdf file")
+        if (!selected) {
+            return; // checks if no file was actually passed
         }
+        console.log("PDF file", selected.name)
+        setFile(selected)
+
+        pdfToText(selected).then(text => {
+            // 'text' now contains the extracted text from the PDF
+            // console.log(text);
+            setTranscript(text);
+            setShowButtons(true);
+        }).catch(error => {
+            console.error("Failed to extract text from pdf:", error);
+        });
     }
 
     const toggleHighlight = () => {
@@ -145,7 +153,7 @@ export default function Textbox(){
         console.log("Transcript to save:", finalTranscript);
         
         try {
-            const response = await fetch("http://127.0.0.1:5000/save", {
+            const response = await fetch("http://127.0.0.1:5000/transcript", {
             method: "POST",
             headers: {
             "Content-Type": "application/json",
@@ -186,7 +194,7 @@ export default function Textbox(){
     };
 
     return (
-    <div className="min-h-screen text-gray-100 flex flex-col items-center p-6 space-y-6">
+    <div className="text-gray-100 flex flex-col items-center p-6 space-y-6">
 
         <h2 className="text-xl font-semibold mb-2 text-indigo-300">Upload Transcript</h2>
 
