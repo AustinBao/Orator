@@ -69,7 +69,7 @@ export default function Recorder() {
     }
 
     return (
-        <div className='p-8 w-full max-w-3xl items'>
+        <div>
             <button
                 onClick={isRecording ? stopRecording : startRecording}
                 disabled={isProcessing}
