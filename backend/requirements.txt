@@ -6,3 +6,8 @@ aiohttp
 websockets
 google-cloud-speech
 openai
+brainflow
+numpy
+time
+pandas
+scipy
