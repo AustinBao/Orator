@@ -1,16 +1,26 @@
-import { AiFillFacebook } from "react-icons/ai"; 
-import { AiFillInstagram } from "react-icons/ai"; 
-import { AiOutlineLinkedin } from "react-icons/ai"; 
+import { AiFillFacebook, AiFillInstagram, AiOutlineLinkedin } from "react-icons/ai";
 
-
-export default function Footer() {  
+export default function Footer() {
   return (
-    <div className="min-h-30 w-screen flex items-center bg-indigo-100 gap-16 px-30">
-      <a>Contact Us</a> 
-      <a>Privacy Policy</a>
-      <AiFillFacebook size={32} />
-      <AiFillInstagram size={32} />
-      <AiOutlineLinkedin size={32}/>
-    </div>
+    <footer className="w-full bg-indigo-100 py-6 px-6 sm:px-12 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-12">
+      {/* Left section */}
+      <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 text-gray-700 font-medium">
+        <a href="#" className="hover:text-indigo-500 transition">Contact Us</a>
+        <a href="#" className="hover:text-indigo-500 transition">Privacy Policy</a>
+      </div>
+
+      {/* Right section (social icons) */}
+      <div className="flex items-center gap-6 text-gray-700">
+        <a href="#" aria-label="Facebook" className="hover:text-indigo-500 transition">
+          <AiFillFacebook size={28} />
+        </a>
+        <a href="#" aria-label="Instagram" className="hover:text-indigo-500 transition">
+          <AiFillInstagram size={28} />
+        </a>
+        <a href="#" aria-label="LinkedIn" className="hover:text-indigo-500 transition">
+          <AiOutlineLinkedin size={28} />
+        </a>
+      </div>
+    </footer>
   );
 }
