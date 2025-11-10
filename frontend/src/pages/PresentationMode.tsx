@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Camera from '../components/Camera';
 import Recorder from '../components/Recorder';
 import type { RecorderHandle, FeedbackMessage } from '../components/Recorder';
@@ -8,18 +8,34 @@ import SimplePDFViewer from '../components/SimplePDFViewer';
 import EEG from '../components/EEG';
 import type { EegStatusDigest } from '../components/EEG';
 
-const stressStates = [
-  { label: 'Calm', color: 'text-emerald-400', badge: 'bg-emerald-400' },
-  { label: 'Focus', color: 'text-amber-300', badge: 'bg-amber-300' },
-  { label: 'Stress', color: 'text-rose-400', badge: 'bg-rose-400' }
-];
-
 const lightGradient = 'bg-gradient-to-br from-indigo-50 via-white to-sky-100 text-slate-900';
 const darkGradient = 'bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100';
 
+interface PresentationNavState {
+  boardInfo?: Record<string, unknown>;
+  baselineRatios?: Record<string, number>;
+  script?: string;
+  pdfFile?: File;
+  pdfMeta?: string | null;
+}
+
+interface GestureData {
+  hipsway?: number;
+  pacing?: number;
+  headtilt?: number;
+  handtomouth?: number;
+  toostill?: number;
+  message?: string;
+}
+
+interface GestureToast {
+  id: number;
+  label: string;
+  timestamp: number;
+}
+
 export default function PresentationMode() {
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [stressIndex, setStressIndex] = useState(0);
   const [presentationFile, setPresentationFile] = useState<File | null>(null);
   const [presentationSummary, setPresentationSummary] = useState<string | null>(null);
   const [isPresenting, setIsPresenting] = useState(false);
@@ -33,18 +49,13 @@ export default function PresentationMode() {
   const feedbackScrollRef = useRef<HTMLDivElement | null>(null);
   const [eegDigest, setEegDigest] = useState<EegStatusDigest | null>(null);
   const [isMuseReady, setIsMuseReady] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setStressIndex(prev => (prev + 1) % stressStates.length);
-    }, 8000);
-    return () => clearInterval(interval);
-  }, []);
+  const location = useLocation();
+  const navState = (location.state ?? null) as PresentationNavState | null;
+  const [gestureToasts, setGestureToasts] = useState<GestureToast[]>([]);
+  const lastGestureRef = useRef<GestureData>({});
 
   const accentButton =
     'px-4 py-2 rounded-xl font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
-
-  const currentStress = stressStates[stressIndex];
   const handlePresentationUpload = (event: ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0];
     if (selected && selected.type === 'application/pdf') {
@@ -55,9 +66,34 @@ export default function PresentationMode() {
     }
   };
 
+  const [isEegDetecting, setIsEegDetecting] = useState(false);
+
+  const callDetectEmotion = async () => {
+    try {
+      const response = await fetch(`${API_URL}/eeg/detect`, { method: 'POST' });
+      const payload = await response.json();
+      if (!response.ok || payload.status === 'error') {
+        throw new Error(payload?.message ?? 'EEG detection failed');
+      }
+      setEegDigest({
+        stressed: Boolean(payload.stressed),
+        message:
+          typeof payload.suggested_message === 'string'
+            ? payload.suggested_message
+            : 'Live EEG detection updated.',
+        timestamp: Date.now()
+      });
+    } catch (err) {
+      console.error('EEG detection error:', err);
+    }
+  };
+
   const handleTogglePresentation = async () => {
     if (isPresenting) {
       recorderRef.current?.stopRecording();
+      if (isEegDetecting) {
+        setIsEegDetecting(false);
+      }
       return;
     }
 
@@ -65,25 +101,88 @@ export default function PresentationMode() {
       return;
     }
 
-    if (!isMuseReady) {
-      console.warn('Starting without Muse connection. EEG detection will be inactive.');
-    }
-
     setIsStartingPresentation(true);
     setFeedbackMessages([]);
     setTranscriptData({ realtime: '', partial: '' });
     try {
       await recorderRef.current.startRecording();
+      if (isMuseReady) {
+        setIsEegDetecting(true);
+        callDetectEmotion();
+      }
     } finally {
       setIsStartingPresentation(false);
     }
   };
 
   useEffect(() => {
+    if (!navState) return;
+    if (navState.pdfFile) {
+      setPresentationFile(navState.pdfFile);
+      setPresentationSummary(navState.pdfMeta ?? navState.pdfFile.name);
+    } else if (navState.pdfMeta) {
+      setPresentationSummary(navState.pdfMeta);
+    }
+    if (navState.script) {
+      setTranscriptData({ realtime: navState.script, partial: '' });
+    }
+    if (navState.boardInfo) {
+      setIsMuseReady(true);
+    }
+  }, [navState]);
+
+  useEffect(() => {
     if (feedbackScrollRef.current) {
       feedbackScrollRef.current.scrollTop = 0;
     }
   }, [feedbackMessages]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const pollGestures = async () => {
+      try {
+        const response = await fetch(`${API_URL}/gesture_data`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch gesture data');
+        }
+        const data: GestureData = await response.json();
+        if (!isMounted) return;
+        const gestureKeys: Array<keyof GestureData> = ['hipsway', 'pacing', 'headtilt', 'handtomouth', 'toostill'];
+        gestureKeys.forEach((key) => {
+          const current = data[key];
+          const previous = lastGestureRef.current[key];
+          if (current === 1 && previous !== 1) {
+            const labelMap: Record<string, string> = {
+              hipsway: 'Hip sway detected',
+              pacing: 'Pacing detected',
+              headtilt: 'Head tilt detected',
+              handtomouth: 'Hand-to-face detected',
+              toostill: 'Too little movement detected'
+            };
+            const toast: GestureToast = {
+              id: Date.now() + Math.random(),
+              label: labelMap[key as string] ?? 'Gesture detected',
+              timestamp: Date.now()
+            };
+            setGestureToasts((prev) => [toast, ...prev].slice(0, 5));
+            setTimeout(() => {
+              setGestureToasts((prev) => prev.filter((t) => t.id !== toast.id));
+            }, 3500);
+          }
+        });
+        lastGestureRef.current = data;
+      } catch (err) {
+        console.error('Gesture polling error:', err);
+      }
+    };
+
+    pollGestures();
+    const interval = setInterval(pollGestures, 2500);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const transcriptWordCount = transcriptData.realtime.trim()
     ? transcriptData.realtime.trim().split(/\s+/).length
@@ -157,13 +256,26 @@ export default function PresentationMode() {
         </div>
 
         <div className="flex flex-wrap gap-4 items-stretch">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-col flex-1 min-w-[280px]">
+          <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-col flex-1 min-w-[280px] relative overflow-visible">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-semibold">Live Camera</h2>
               <span className="text-xs uppercase tracking-[0.3em] text-indigo-300">Gesture view</span>
             </div>
             <div className="rounded-2xl overflow-hidden border border-white/10 flex-1">
               <Camera />
+            </div>
+            <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
+              <div className="space-y-2 w-full max-w-sm px-4">
+                {gestureToasts.map((toast) => (
+                  <div
+                    key={toast.id}
+                    className="pointer-events-auto bg-rose-500/90 text-white px-3 py-2 rounded-xl shadow-lg text-sm flex items-center gap-2"
+                  >
+                    <span>⚠️</span>
+                    <span>{toast.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
            
           </div>
@@ -319,3 +431,4 @@ export default function PresentationMode() {
     </div>
   );
 }
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';

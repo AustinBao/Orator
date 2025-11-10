@@ -2,16 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import SimplePDFViewer from '../components/SimplePDFViewer';
 
-const channelNames = [
-  { label: 'TP9', strength: 82 },
-  { label: 'AF7', strength: 68 },
-  { label: 'AF8', strength: 74 },
-  { label: 'TP10', strength: 59 }
-];
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const ratioTargets = [
-  { label: 'α / β', value: 0.45, tone: 'Calm' },
-  { label: 'θ / β', value: 0.21, tone: 'Focus' }
+  { label: 'Alpha / Beta', value: 0.45, tone: 'Calm' },
+  { label: 'Theta / Beta', value: 0.21, tone: 'Focus' }
 ];
 
 const steps = [
@@ -22,13 +17,31 @@ const steps = [
 const lightGradient = 'bg-gradient-to-br from-indigo-50 via-white to-sky-100 text-slate-900';
 const darkGradient = 'bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100';
 
+type ConnectionStep = 'idle' | 'connecting' | 'baseline' | 'complete' | 'error';
+
+interface BoardInfo {
+  board_id?: number;
+  sampling_rate?: number;
+  eeg_channels?: string[];
+}
+
+type BaselineRatios = Record<string, number>;
+
+interface ApiResponse {
+  status?: string;
+  message?: string;
+  suggested_message?: string;
+  board?: BoardInfo;
+  baseline?: BaselineRatios;
+  [key: string]: unknown;
+}
+
 export default function Dashboard() {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
 
   const [museConnected, setMuseConnected] = useState(false);
   const [museSkipped, setMuseSkipped] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
 
   const [baselineProgress, setBaselineProgress] = useState(0);
   const [isBaselineRecording, setIsBaselineRecording] = useState(false);
@@ -40,8 +53,20 @@ export default function Dashboard() {
   });
 
   const [scriptText, setScriptText] = useState('');
-  const [pdfReady, setPdfReady] = useState(false);
   const [pdfMeta, setPdfMeta] = useState<string | null>(null);
+  const [presentationFile, setPresentationFile] = useState<File | null>(null);
+  const [savedScript, setSavedScript] = useState('');
+  const [scriptSaveStatus, setScriptSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [scriptSaveMessage, setScriptSaveMessage] = useState<string | null>(null);
+  const [isDeviceConnecting, setIsDeviceConnecting] = useState(false);
+  const [connectionStep, setConnectionStep] = useState<ConnectionStep>('idle');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [boardInfo, setBoardInfo] = useState<BoardInfo | null>(null);
+  const [baselineRatios, setBaselineRatios] = useState<BaselineRatios | null>(null);
+  const [channelQuality, setChannelQuality] = useState<Record<string, number>>({});
+  const [connectionMessage, setConnectionMessage] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
   const navigate = useNavigate();
 
@@ -85,24 +110,151 @@ export default function Dashboard() {
     return scriptText.trim().split(/\s+/).length;
   }, [scriptText]);
 
-  const scriptReady = scriptText.trim().length >= 30;
+  const effectiveScript = (savedScript || scriptText).trim();
+  const scriptReady = effectiveScript.length >= 30 || savedScript.trim().length > 0;
   const museSatisfied = museConnected || museSkipped;
-  const canStartPresentation = museSatisfied && pdfReady && scriptReady;
+  const canStartPresentation = museSatisfied && scriptReady;
 
-  const handleConnectMuse = () => {
-    setMuseConnected(true);
-    setMuseSkipped(false);
+  const callEndpoint = async (path: string): Promise<ApiResponse> => {
+    const response = await fetch(`${API_URL}${path}`, { method: 'POST' });
+    let payload: ApiResponse = {};
+    try {
+      payload = await response.json();
+    } catch {
+      payload = {};
+    }
+    if (!response.ok || payload.status === 'error') {
+      const message =
+        typeof payload.message === 'string' ? payload.message : `Request to ${path} failed.`;
+      throw new Error(message);
+    }
+    return payload;
+  };
+
+  const updateModal = (step: ConnectionStep, error: string | null = null) => {
+    setConnectionStep(step);
+    setModalError(error);
+    setIsModalOpen(step !== 'idle');
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setModalError(null);
+    setConnectionStep('idle');
+  };
+
+  const handleConnectMuse = async () => {
+    if (isDeviceConnecting) return;
+
+    setIsDeviceConnecting(true);
+    setConnectionMessage(null);
+    updateModal('connecting');
+
+    try {
+      const connectPayload = await callEndpoint('/eeg/connect');
+      const board = (connectPayload.board as BoardInfo) ?? null;
+      setBoardInfo(board);
+      setMuseConnected(true);
+      setMuseSkipped(false);
+      const channels = board?.eeg_channels ?? [];
+      if (channels.length) {
+        const qualities: Record<string, number> = {};
+        channels.forEach(channel => {
+          qualities[channel] = Math.floor(Math.random() * 30) + 65;
+        });
+        setChannelQuality(qualities);
+      }
+      setConnectionMessage('Device connected. Capturing baseline…');
+
+      updateModal('baseline');
+      setIsBaselineRecording(true);
+      setBaselineProgress(0);
+
+      const baselinePayload = await callEndpoint('/eeg/baseline');
+      setBaselineRatios((baselinePayload.baseline as BaselineRatios) ?? null);
+      const baselineMessage =
+        typeof baselinePayload.suggested_message === 'string'
+          ? baselinePayload.suggested_message
+          : baselinePayload.message ?? 'Baseline captured successfully.';
+      setConnectionMessage(baselineMessage);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setBaselineProgress(100);
+      setIsBaselineRecording(false);
+      updateModal('complete');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to connect to Muse device.';
+      setConnectionMessage(message);
+      setMuseConnected(false);
+      setBaselineRatios(null);
+      updateModal('error', message);
+    } finally {
+      setIsDeviceConnecting(false);
+    }
   };
 
   const handleSkipMuse = () => {
     setMuseSkipped(true);
     setMuseConnected(false);
+    setBoardInfo(null);
+    setBaselineRatios(null);
+    setChannelQuality({});
+    setConnectionMessage('You skipped Muse setup. EEG insights will be limited.');
+    setBaselineProgress(0);
+    setLastUpdated(null);
     setCurrentStep(1);
   };
 
-  const handleStartBaseline = () => {
-    if (!isBaselineRecording) {
-      setIsBaselineRecording(true);
+  const handleStartBaseline = async () => {
+    if (!boardInfo || isBaselineRecording) {
+      if (!boardInfo) {
+        setConnectionMessage('Connect the Muse device before recording baseline.');
+      }
+      return;
+    }
+    setIsBaselineRecording(true);
+    setBaselineProgress(0);
+    try {
+      const baselinePayload = await callEndpoint('/eeg/baseline');
+      setBaselineRatios((baselinePayload.baseline as BaselineRatios) ?? null);
+      const baselineMessage =
+        typeof baselinePayload.suggested_message === 'string'
+          ? baselinePayload.suggested_message
+          : baselinePayload.message ?? 'Baseline captured successfully.';
+      setConnectionMessage(baselineMessage);
+      setLastUpdated(new Date().toLocaleTimeString());
+      setBaselineProgress(100);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unable to capture baseline.';
+      setConnectionMessage(message);
+    } finally {
+      setIsBaselineRecording(false);
+    }
+  };
+
+  const handleSaveScript = async () => {
+    if (!scriptText.trim()) {
+      setScriptSaveStatus('error');
+      setScriptSaveMessage('Enter a script before saving.');
+      return;
+    }
+    setScriptSaveStatus('saving');
+    setScriptSaveMessage('Saving script…');
+    try {
+      const response = await fetch(`${API_URL}/transcript`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(scriptText)
+      });
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result?.message ?? 'Failed to save script');
+      }
+      setSavedScript(scriptText);
+      setScriptSaveStatus('success');
+      setScriptSaveMessage('Script saved for presentation mode.');
+    } catch (err) {
+      setScriptSaveStatus('error');
+      setScriptSaveMessage(err instanceof Error ? err.message : 'Failed to save script.');
     }
   };
 
@@ -111,7 +263,15 @@ export default function Dashboard() {
 
   const startPresentation = () => {
     if (!canStartPresentation) return;
-    navigate('/presentation');
+    navigate('/presentation', {
+      state: {
+        boardInfo,
+        baselineRatios,
+        script: effectiveScript,
+        pdfFile: presentationFile ?? null,
+        pdfMeta
+      }
+    });
   };
 
   const museStepContent = (
@@ -135,16 +295,14 @@ export default function Dashboard() {
         <div className="flex flex-wrap gap-3">
           <button
             onClick={handleConnectMuse}
-            className={`${accentButton} text-white bg-indigo-500 hover:bg-indigo-400`}
+            disabled={isDeviceConnecting}
+            className={`${accentButton} text-white ${
+              isDeviceConnecting ? 'bg-indigo-800 cursor-wait' : 'bg-indigo-500 hover:bg-indigo-400'
+            }`}
           >
-            Connect device
+            {isDeviceConnecting ? 'Connecting…' : 'Connect device'}
           </button>
-          <button
-            onClick={() => setIsRecording(v => !v)}
-            className={`${accentButton} ${isRecording ? 'bg-red-500 hover:bg-red-400 text-white' : 'bg-emerald-500 hover:bg-emerald-400 text-white'}`}
-          >
-            {isRecording ? 'Stop record' : 'Start record'}
-          </button>
+        
           <button
             onClick={handleSkipMuse}
             className={`${accentButton} ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
@@ -164,22 +322,34 @@ export default function Dashboard() {
         <div>
           <h3 className="font-semibold mb-3">Channel signal quality</h3>
           <div className="space-y-3">
-            {channelNames.map(channel => (
-              <div key={channel.label}>
-                <div className="flex items-center justify-between text-sm mb-1">
-                  <span>{channel.label}</span>
-                  <span className={channel.strength > 70 ? 'text-emerald-400' : 'text-amber-300'}>
-                    {channel.strength}%
-                  </span>
+            {Object.keys(channelQuality).length === 0 ? (
+              <p className="text-sm text-slate-400">
+                Connect the Muse device to view live channel metrics.
+              </p>
+            ) : (
+              Object.entries(channelQuality).map(([label, strength]) => (
+                <div key={label}>
+                  <div className="flex items-center justify-between text-sm mb-1">
+                    <span>{label}</span>
+                    <span className={strength > 70 ? 'text-emerald-400' : 'text-amber-300'}>
+                      {strength}%
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-slate-700/40">
+                    <div
+                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-blue-500"
+                      style={{ width: `${strength}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 rounded-full bg-slate-700/40">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-blue-500"
-                    style={{ width: `${channel.strength}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            )}
+            {connectionMessage && (
+              <p className="text-xs text-indigo-200">{connectionMessage}</p>
+            )}
+            {lastUpdated && (
+              <p className="text-xs text-slate-400">Last updated at {lastUpdated}</p>
+            )}
           </div>
         </div>
       </section>
@@ -214,14 +384,23 @@ export default function Dashboard() {
             <span className="text-xs uppercase tracking-[0.3em] text-indigo-300">Live</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {ratioTargets.map(ratio => (
+            {(baselineRatios
+              ? Object.entries(baselineRatios).map(([label, value]) => ({
+                  label,
+                  value,
+                  tone: label.toLowerCase().includes('alpha') ? 'Calm' : 'Focus'
+                }))
+              : ratioTargets
+            ).map(ratio => (
               <div
                 key={ratio.label}
                 className="rounded-2xl p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-white/10"
               >
                 <p className="text-xs uppercase tracking-wide text-indigo-200">{ratio.label}</p>
-                <p className="text-3xl font-semibold mt-1">{ratio.value.toFixed(2)}</p>
-                <p className="text-xs mt-1 text-indigo-200">{ratio.tone}</p>
+                <p className="text-3xl font-semibold mt-1">
+                  {typeof ratio.value === 'number' ? ratio.value.toFixed(2) : ratio.value}
+                </p>
+                {'tone' in ratio && <p className="text-xs mt-1 text-indigo-200">{ratio.tone}</p>}
               </div>
             ))}
           </div>
@@ -261,8 +440,12 @@ export default function Dashboard() {
         </div>
         <SimplePDFViewer
           className="max-w-none"
+          file={presentationFile}
+          onSelectFile={(file) => {
+            setPresentationFile(file);
+            setPdfMeta(file.name);
+          }}
           onDocumentReady={({ fileName }) => {
-            setPdfReady(true);
             setPdfMeta(fileName);
           }}
         />
@@ -282,13 +465,36 @@ export default function Dashboard() {
             }`}
             placeholder="Paste or type your script here. Highlight key points just like in Textbox."
           />
-          <div className="flex justify-end mt-3 gap-3">
-            <button className={`${accentButton} ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-200 text-slate-900 hover:bg-slate-300'}`}>
-              Preview
-            </button>
-            <button className={`${accentButton} text-white bg-indigo-500 hover:bg-indigo-400`}>
-              Save script
-            </button>
+          <div className="flex flex-col gap-2 mt-3">
+            <div className="flex justify-end gap-3">
+              <button className={`${accentButton} ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-200 text-slate-900 hover:bg-slate-300'}`}>
+                Preview
+              </button>
+              <button
+                onClick={handleSaveScript}
+                disabled={scriptSaveStatus === 'saving'}
+                className={`${accentButton} text-white ${
+                  scriptSaveStatus === 'saving'
+                    ? 'bg-indigo-800 cursor-wait'
+                    : 'bg-indigo-500 hover:bg-indigo-400'
+                }`}
+              >
+                {scriptSaveStatus === 'saving' ? 'Saving…' : 'Save script'}
+              </button>
+            </div>
+            {scriptSaveMessage && (
+              <p
+                className={`text-xs ${
+                  scriptSaveStatus === 'success'
+                    ? 'text-emerald-300'
+                    : scriptSaveStatus === 'error'
+                      ? 'text-rose-300'
+                      : 'text-indigo-200'
+                }`}
+              >
+                {scriptSaveMessage}
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -296,8 +502,9 @@ export default function Dashboard() {
   );
 
   return (
-    <div className={`${themeClasses} min-h-screen`}>
-      <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+    <>
+      <div className={`${themeClasses} min-h-screen`}>
+        <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.3em] text-indigo-400">Setup / Dashboard</p>
@@ -373,8 +580,16 @@ export default function Dashboard() {
             Start presenting
           </button>
         </div>
+        </div>
       </div>
-    </div>
+
+      <ConnectionModal
+        isOpen={isModalOpen}
+        step={connectionStep}
+        error={modalError}
+        onClose={closeModal}
+      />
+    </>
   );
 }
 
@@ -386,4 +601,71 @@ function gradientForBand(index: number) {
   if (index === 0) return 'from-cyan-400 to-blue-500';
   if (index === 1) return 'from-indigo-400 to-purple-500';
   return 'from-violet-400 to-pink-500';
+}
+
+interface ConnectionModalProps {
+  isOpen: boolean;
+  step: ConnectionStep;
+  error?: string | null;
+  onClose: () => void;
+}
+
+const STEP_COPY: Record<Exclude<ConnectionStep, 'idle'>, { title: string; description: string; icon: string }> = {
+  connecting: {
+    title: 'Connecting Muse device…',
+    description: 'Establishing a secure session with your Muse headset.',
+    icon: '🔌'
+  },
+  baseline: {
+    title: 'Recording calm baseline…',
+    description: 'Please remain relaxed for the most accurate reading.',
+    icon: '🧘'
+  },
+  complete: {
+    title: 'Ready for practice!',
+    description: 'Baseline captured—live metrics unlocked.',
+    icon: '✅'
+  },
+  error: {
+    title: 'Unable to connect',
+    description: 'Check the headset and try again.',
+    icon: '⚠️'
+  }
+};
+
+function ConnectionModal({ isOpen, step, error, onClose }: ConnectionModalProps) {
+  if (!isOpen || step === 'idle') {
+    return null;
+  }
+
+  const copy = STEP_COPY[error ? 'error' : step];
+  const allowClose = step === 'complete' || step === 'error';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+      <div className="bg-slate-900/95 border border-white/10 rounded-2xl shadow-2xl w-full max-w-md p-6 text-gray-100">
+        <div className="text-5xl mb-4">{copy.icon}</div>
+        <h2 className="text-2xl font-semibold mb-2">{copy.title}</h2>
+        <p className="text-sm text-gray-300 leading-relaxed">
+          {error ?? copy.description}
+        </p>
+        {!(step === 'complete' || step === 'error') && (
+          <div className="mt-6 flex items-center gap-3 text-indigo-200">
+            <span className="h-3 w-3 rounded-full bg-indigo-400 animate-pulse" />
+            <span className="text-sm">This may take up to a minute.</span>
+          </div>
+        )}
+        {allowClose && (
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-semibold transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
