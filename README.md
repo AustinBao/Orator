@@ -2,9 +2,9 @@
 
 ### Built by Team EEGenius
 
-"Great ideas get lost in poor presentations. Everyone deserves to sound as good as their ideas."
+### "Great ideas get lost in poor presentations. Everyone deserves to sound as good as their ideas."
 
-!(/assets/Orator.png)
+![Orator](/assets/Orator.png)
 
 ## **Overview**
 
