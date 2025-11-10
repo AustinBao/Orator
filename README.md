@@ -1,10 +1,12 @@
-#**Orator – AI-Powered Public Speaking Coach**
+# **Orator – AI-Powered Public Speaking Coach**
 
-###Built by Team EEGenius
+### Built by Team EEGenius
 
 "Great ideas get lost in poor presentations. Everyone deserves to sound as good as their ideas."
 
-##**Overview**
+!(/assets/Orator.png)
+
+## **Overview**
 
 Orator is an AI-driven platform designed to help individuals improve their public speaking skills through real-time feedback powered by speech analysis, gesture tracking, and EEG-based emotion detection.
 The platform enables users to record practice sessions, receive data-driven insights, and track their progress over time, turning nervous practice into confident performance.
@@ -31,7 +33,7 @@ Google Cloud Speech-to-Text API
 YOLOv11 for gesture detection
 BrainFlow + Muse EEG for emotion tracking
 
-##**Installation**
+## **Installation**
 1. Clone the Repository
 ```bash
 git clone https://github.com/EEGenius/orator.git
@@ -60,7 +62,7 @@ npm install
 npm run dev
 ```
 
-##**How It Works**
+## **How It Works**
 
 The user records a presentation through the frontend recorder.
 
@@ -75,7 +77,7 @@ EEG data from Muse tracks confidence and stress levels.
 A feedback report summarizes strengths and areas for improvement.
 
 
-##_Business Model_
+## _Business Model_
 
 Orator follows a freemium model:
 
@@ -86,23 +88,15 @@ Premium Tier: Advanced analytics, EEG insights, and longer sessions.
 Enterprise: Institutional access for universities and training programs.
 
 
-##**Vision**
+## **Vision**
 
 At Team EEGenius, we believe confidence can be learned and measured.
 Our mission is to make high-quality communication training accessible, affordable, and powered by AI.
 
 
 
-##Team EEGenius
+## Team EEGenius
 
-Austin Bao
-
-Jion Choi
-
-Kibo Amran
-
-David Xia
-
-Raphael Ho
+Austin Bao, Jion Choi, Kibo Amran, David Xia, Raphael Ho
 
 
