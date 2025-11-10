@@ -196,7 +196,7 @@ export default function Textbox(){
     return (
     <div className="text-gray-100 flex flex-col items-center p-6 space-y-6">
 
-        <h2 className="text-xl font-semibold mb-2 text-indigo-300">Upload Transcript</h2>
+        <h2 className="text-xl font-semibold mb-2 text-indigo-300">Upload Script</h2>
 
         <input type="file" accept=".pdf" onChange={handleFileChange}
         className="px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-lg font-semibold"
