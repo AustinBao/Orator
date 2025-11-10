@@ -1,8 +1,6 @@
-import cv2
 import time
 import numpy as np
 from ultralytics import YOLO
-import json
 
 # Initialize the YOLO model
 model = YOLO("yolo11n-pose.pt")
@@ -15,16 +13,17 @@ history = {
 last_eval = time.time()
 
 # ======== helper functions ========= #
-def too_still(center_positions, duration=15, still_threshold=15):
+def too_still(center_positions, duration=8, still_threshold=50):
     """
-    Return 1 if the user's body center has stayed nearly still for the past 15 seconds.
-    Only triggers after 15s of data have accumulated.
+    Return 1 if the user's body center has stayed nearly still for the past 8 seconds.
+    Only triggers after 8s of data have accumulated.
+    Triggers more frequently - allows up to 50 pixels of minor movement but still flags stillness.
     """
     now = time.time()
     # Only keep data within the last 'duration' seconds
     recent = [(x, y) for (x, y, t) in center_positions if now - t < duration]
 
-    # If we don't have a full 15s window yet, skip detection
+    # If we don't have a full window yet, skip detection
     if len(recent) < 2:
         return 0
     earliest_time = min(t for _, _, t in center_positions)
@@ -54,35 +53,50 @@ def hip_sway(hip_positions, duration=2, threshold=20):
     return int(std_x > threshold)
 
 
-def pacing(center_positions, duration=2, min_shift=40):
+def pacing(center_positions, duration=6, min_shift=30):
     """
-    Return 1 if the user's body moves side-to-side once within the last 3 seconds.
+    Return 1 if the user paces back and forth excessively (2+ direction changes).
+    Detects repetitive side-to-side movement which is distracting during presentations.
 
-    - duration: time window in seconds
-    - min_shift: minimum horizontal distance (in pixels) to count as a real movement
+    - duration: time window in seconds (default 6s to catch multiple pacing cycles)
+    - min_shift: minimum horizontal distance (in pixels) per movement to count as real pacing
     """
     # Get recent center positions
     recent = [(x, y) for (x, y, t) in center_positions if time.time() - t < duration]
-    if len(recent) < 3:
+    if len(recent) < 5:
         return 0
 
     xs = np.array([x for x, _ in recent])
 
     # Smooth tiny jitter using a simple moving average
     smooth_x = np.convolve(xs, np.ones(5) / 5, mode="valid")
+    
+    if len(smooth_x) < 3:
+        return 0
 
-    # Compute movement range and direction
-    min_x, max_x = np.min(smooth_x), np.max(smooth_x)
-    total_range = max_x - min_x
-
-    # Check if there's a clear left→right or right→left pattern
-    start_dir = np.sign(smooth_x[-1] - smooth_x[0])
-    midpoint = smooth_x[len(smooth_x)//2]
-    mid_dir = np.sign(midpoint - smooth_x[0])
-
-    # If range is large enough and direction changes at least once → pacing
-    direction_changed = (start_dir != mid_dir) and (mid_dir != 0)
-    if total_range > min_shift and direction_changed:
+    # Count direction changes (left→right→left or right→left→right)
+    direction_changes = 0
+    prev_direction = 0
+    
+    for i in range(1, len(smooth_x)):
+        movement = smooth_x[i] - smooth_x[i-1]
+        
+        # Only count significant movements (filter out tiny jitter)
+        if abs(movement) > (min_shift / len(smooth_x) * 2):
+            current_direction = np.sign(movement)
+            
+            # Direction changed from previous movement
+            if prev_direction != 0 and current_direction != 0 and current_direction != prev_direction:
+                direction_changes += 1
+            
+            if current_direction != 0:
+                prev_direction = current_direction
+    
+    # Check total range to ensure actual movement occurred
+    total_range = np.max(smooth_x) - np.min(smooth_x)
+    
+    # Flag as pacing if 2+ direction changes AND significant movement range
+    if direction_changes >= 2 and total_range > min_shift:
         return 1
     return 0
 
@@ -113,14 +127,15 @@ def head_tilt(keypoints, sensitivity=1):
     # Trigger if eyes are below OR within small margin above ear level
     return int(avg_eye_y > (avg_ear_y - threshold))
 
-def hand_to_mouth(keypoints, scale_factor=0.6):
+def hand_to_mouth(keypoints, scale_factor=0.8):
     """
     Return 1 if either hand is close to the user's head region.
     - Uses the average of head keypoints (nose, eyes, ears) as the 'head center'
     - Automatically scales threshold based on body size for sensitivity
+    - Very lenient detection to catch most hand-to-face gestures
     """
     try:
-        # Head region points (rough estimate)
+        # Head region points
         head_points = [
             keypoints[0],  # nose
             keypoints[1],  # left eye
@@ -139,13 +154,14 @@ def hand_to_mouth(keypoints, scale_factor=0.6):
         return np.linalg.norm(np.array(a) - np.array(b))
 
     # Compute adaptive distance threshold (scaled by shoulder width)
+    # Using large scale factor (0.8) to be very lenient
     shoulder_dist = dist(left_shoulder, right_shoulder)
-    threshold = shoulder_dist * scale_factor  # increases sensitivity with body size
+    threshold = shoulder_dist * scale_factor
 
     # Get head center
     head_center = np.mean(head_points, axis=0)
 
-    # Compute distances
+    # Compute distances - no height checks, just distance
     left_dist = dist(left_hand, head_center)
     right_dist = dist(right_hand, head_center)
 
@@ -164,8 +180,9 @@ def process_frame(frame, duration=2.0):
         duration: Time window in seconds for gesture analysis (default: 2.0)
         
     Returns:
-        dict: Analysis results with gesture metrics if evaluation interval has passed,
-              or None if not enough time has passed since last evaluation.
+        tuple: (annotated_frame, analysis_results)
+            - annotated_frame: Frame with YOLO keypoints and boxes drawn
+            - analysis_results: Dict with gesture metrics or None
     """
     global last_eval, history
     
@@ -196,11 +213,11 @@ def process_frame(frame, duration=2.0):
         if current_time - last_eval >= duration:
             output = {
                 "hipsway": hip_sway(history["hips"], duration),
-                "pacing": pacing(history["center"], duration),
+                "pacing": pacing(history["center"]),  # Uses default 6s window to detect multiple direction changes
                 "headtilt": head_tilt(kpts),
                 "handtomouth": hand_to_mouth(kpts),
-                "toostill": too_still(history["center"], duration=15, still_threshold=15)
+                "toostill": too_still(history["center"])  # Uses default 15s window, 30px threshold - more lenient
             }
             last_eval = current_time
     
-    return output
+    return annotated_frame, output

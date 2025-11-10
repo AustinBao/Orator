@@ -124,6 +124,11 @@ CRITICAL RULE: You will receive "WHAT THEY JUST SAID" and "PREVIOUS CONTEXT".
 - If "WHAT THEY JUST SAID" is on-topic → Say "✓" (even if context shows past mistakes!)
 - If "WHAT THEY JUST SAID" includes "what I meant to say" or "oh sorry" followed by correct topic → That's a RECOVERY, praise it!
 
+CAPITALIZED PHRASES = KEY TOPICS:
+- ALL CAPS phrases in the script are IMPORTANT and should be EMPHASIZED
+- Proactively warn when they're approaching a capitalized topic: "🎯 Coming up: Emphasize [TOPIC]"
+- If they mention a capitalized topic without emphasis, remind them it's a key point
+
 EXAMPLE:
 - WHAT THEY JUST SAID: "AI is impacting education"
 - CONTEXT: "Clash Royale... video games..."
@@ -131,6 +136,7 @@ EXAMPLE:
 - WRONG RESPONSE: Criticizing Clash Royale (that's in the past!)
 
 When they're currently doing well: "✓"
+When approaching a KEY TOPIC: "🎯 Coming up: Emphasize [TOPIC]"
 When they're currently off-topic: Gently redirect"""
                     },
                     {
@@ -189,6 +195,9 @@ When they're currently off-topic: Gently redirect"""
 
             **HIGHLIGHTED TOPICS TO EMPHASIZE:**
             {highlighted_str}
+            
+            **IMPORTANT:** Phrases in ALL CAPS in the script are KEY TOPICS that MUST be emphasized during the presentation. 
+            These are critical points the presenter should speak about with energy and clarity.
 
 **WHAT THEY JUST SAID (focus here - this is the current moment):**
 "{live_transcript}"
@@ -222,8 +231,14 @@ You are a SUPPORTIVE coach, not a harsh critic. Only speak up for SIGNIFICANT is
 1. **Filler words**: Using "uh", "um", "like", "you know" excessively (more than 2-3 times in ONE sentence)
 2. **Stuttering**: Repeating words 3+ times in a row
 3. **Currently off-topic**: The MOST RECENT sentence is about something unrelated (not old sentences)
-4. **Skipping HIGHLIGHTED TOPICS**: Not explaining important capitalized concepts
+4. **Skipping HIGHLIGHTED TOPICS**: Not explaining important capitalized concepts (ALL CAPS phrases)
 5. **Too brief**: Rushing through important topics without depth
+6. **Missing emphasis**: Speaking about a HIGHLIGHTED TOPIC without energy or emphasis
+
+**PROACTIVE GUIDANCE - Look ahead in the script:**
+- If they're approaching a HIGHLIGHTED TOPIC (ALL CAPS phrase) in the next few sentences, give them a heads-up
+- Example: "🎯 Coming up: Emphasize [TOPIC NAME]"
+- This helps them prepare to speak with energy about important points
 
 **Balance:** Be supportive but honest. If they're clearly off-topic, say so gently. If they're doing well, encourage them.
 
@@ -238,14 +253,19 @@ You are a SUPPORTIVE coach, not a harsh critic. Only speak up for SIGNIFICANT is
 **When they're on track:**
 - "✓" or "✓ Good flow!" (keep it very brief)
 
+**When approaching a key topic:**
+🎯 Coming up: Emphasize [TOPIC NAME] - Get ready to bring energy!
+
 **When there's a real issue:**
 ⚠️ [Specific issue]
 💡 [Quick actionable tip]
 
 **GOOD Examples:**
 - They say: "technology is reshaping education" → Response: "✓"
+- They're about to reach a HIGHLIGHTED TOPIC → Response: "🎯 Coming up: Emphasize ARTIFICIAL INTELLIGENCE - Get ready!"
 - They say: "video games... what I meant to say is AI impacts education" → Response: "✓ Good recovery!"
 - They say: "um uh like technology um impacts uh education" → Response: "⚠️ Too many filler words \n💡 Take a breath"
+- They mention a HIGHLIGHTED TOPIC without emphasis → Response: "⚠️ This is a KEY POINT \n💡 Bring more energy and emphasis to [TOPIC]"
 
 **BAD Examples (DON'T do these):**
 - They say: "AI is transforming education" but context mentions "Clash Royale" → DON'T flag Clash Royale, they're on topic NOW
@@ -256,6 +276,7 @@ You are a SUPPORTIVE coach, not a harsh critic. Only speak up for SIGNIFICANT is
 - Flag ONLY if the MOST RECENT sentence itself has the issue
 - PRAISE recovery attempts ("what I meant to say", "oh sorry")
 - Don't dwell on past mistakes visible in context
+- PROACTIVELY warn about upcoming HIGHLIGHTED TOPICS so they can prepare
             """
         return prompt
     
