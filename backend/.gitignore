@@ -5,6 +5,9 @@ venv/
 .env
 .env.*
 
+# GCP credentials
+gcp_key.json
+
 # OS files
 .DS_Store
 Thumbs.db
