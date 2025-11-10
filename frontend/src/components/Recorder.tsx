@@ -27,7 +27,7 @@ export default function Recorder() {
         
         try {
             // Connect to WebSocket
-            websocket.current = new WebSocket('ws://localhost:5000/stream_audio')
+            websocket.current = new WebSocket('ws://localhost:8000/stream_audio')
             
             websocket.current.onopen = () => {
                 console.log('WebSocket connected')

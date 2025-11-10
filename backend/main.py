@@ -1,16 +1,36 @@
-from flask import Flask, jsonify, request, Response
-from flask_cors import CORS
-from flask_sock import Sock
-from audio.streaming_speech_to_text import StreamingSpeechRecognizer
-from audio.openai import PresentationAnalyzer
 import json
 import base64
 import queue
 import threading
 import time
 import cv2
+
+#flask import
+from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
+from flask_sock import Sock
+
+#speech to text import
+from audio.speech_to_text import transcribe_audio
+from audio.streaming_speech_to_text import StreamingSpeechRecognizer
+from audio.openai import PresentationAnalyzer
+
+#dot env
 from dotenv import load_dotenv
+
+#video detection (gesture)
 from video.gesture import process_frame
+
+#emotion detection (eeg)
+from eeg.detect import (
+    connectMuse,
+    record_calm_state,
+    record_current_state,
+    detect_stress,
+    BOARD_ID
+)
+
+
 
 # Load environment variables
 load_dotenv()
@@ -56,6 +76,13 @@ def gen_frames():
 # Global variable to store the latest gesture analysis results
 latest_gesture_data = {}
 
+# Muse / EEG state tracking
+muse_state = {
+    "board": None,
+    "board_info": None,
+    "baseline": None
+}
+
 @app.route('/gesture_data')
 def get_gesture_data():
     return jsonify(latest_gesture_data or {"message": "No gesture data available yet"})
@@ -88,6 +115,120 @@ def save_transcript():
             "message": f"Failed to receive transcription: {str(e)}"
         })
     return jsonify({"status": "success", "received": ""})
+
+@app.route('/eeg/connect', methods=['POST'])
+def connect_muse():
+    global muse_state
+    try:
+        board = connectMuse()
+        if board is None:
+            raise RuntimeError("Unable to connect to Muse device.")
+
+        sampling_rate = board.get_sampling_rate(BOARD_ID)
+        eeg_channels = board.get_eeg_names(BOARD_ID)
+
+        board_info = {
+            "board_id": BOARD_ID,
+            "sampling_rate": sampling_rate,
+            "eeg_channels": eeg_channels
+        }
+
+        muse_state["board"] = board
+        muse_state["board_info"] = board_info
+
+        return jsonify({
+            "status": "connected",
+            "board": board_info,
+            "message": "Muse device connected."
+        })
+    except Exception as e:
+        muse_state["board"] = None
+        muse_state["board_info"] = None
+        print(f"/eeg/connect error: {e}")
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to connect to Muse device: {str(e)}"
+        }), 500
+
+@app.route('/eeg/baseline', methods=['POST'])
+def capture_baseline():
+    global muse_state
+    board = muse_state.get("board")
+    board_info = muse_state.get("board_info")
+
+    if board is None or board_info is None:
+        return jsonify({
+            "status": "error",
+            "message": "Connect to the Muse device before capturing the baseline."
+        }), 400
+
+    try:
+        baseline = record_calm_state(
+            board,
+            board_info["board_id"],
+            board_info["sampling_rate"]
+        )
+        muse_state["baseline"] = baseline
+
+        return jsonify({
+            "status": "baseline_ready",
+            "baseline": baseline,
+            "message": "Baseline captured. Please remain calm for consistent readings.",
+            "suggested_message": "Baseline captured. Take a deep breath and begin when you feel ready."
+        })
+    except Exception as e:
+        print(f"/eeg/baseline error: {e}")
+        return jsonify({
+            "status": "error",
+            "message": f"Unable to capture baseline: {str(e)}"
+        }), 500
+
+@app.route('/eeg/detect', methods=['POST'])
+def detect_emotion():
+    global muse_state
+    board = muse_state.get("board")
+    board_info = muse_state.get("board_info")
+    baseline = muse_state.get("baseline")
+
+    if board is None or board_info is None:
+        return jsonify({
+            "status": "error",
+            "message": "Connect to the Muse device before running detection."
+        }), 400
+
+    if baseline is None:
+        return jsonify({
+            "status": "error",
+            "message": "Capture a baseline before running detection."
+        }), 400
+
+    try:
+        current_ratio = record_current_state(
+            board,
+            board_info["board_id"],
+            board_info["sampling_rate"]
+        )
+        stressed = detect_stress(current_ratio, baseline)
+
+        suggestion = (
+            "We're detecting elevated stress—slow your pace and take a calming breath."
+            if stressed else
+            "Great composure detected! Keep your steady delivery."
+        )
+
+        return jsonify({
+            "status": "analysis_complete",
+            "stressed": stressed,
+            "baseline": baseline,
+            "current_ratio": current_ratio,
+            "suggested_message": suggestion
+        })
+    except Exception as e:
+        print(f"/eeg/detect error: {e}")
+        return jsonify({
+            "status": "error",
+            "message": f"Unable to run detection: {str(e)}"
+        }), 500
 
 @sock.route('/stream_audio')
 def stream_audio(ws):
@@ -238,4 +379,4 @@ def stream_audio(ws):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
