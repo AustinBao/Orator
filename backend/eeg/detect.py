@@ -4,11 +4,53 @@ import numpy as np
 import time
 import pandas as pd
 from scipy.signal import butter, lfilter
-from DataPreprocess import read_data, filter_EEG_from_data, process_eeg_data
-from FeatureExtraction import extract_features, average_features
+from .DataPreprocess import read_data, filter_EEG_from_data, process_eeg_data
+from .FeatureExtraction import extract_features, average_features
 
 params = BrainFlowInputParams()
 params.serial_port = '/dev/tty' #Change this depending on your device and OS
+
+# module-level singleton to reuse existing board/session
+_board_instance = None
+BOARD_ID = 39
+
+def connectMuse():
+    global _board_instance
+    try:
+        # reuse existing, healthy board if present
+        if _board_instance is not None:
+            try:
+                # quick health check: try to get sampling rate (will raise if session invalid)
+                _board_instance.get_sampling_rate(BOARD_ID)
+                print("Reusing existing board session.")
+                return _board_instance
+            except Exception:
+                # existing instance is invalid/closed — try to release and recreate
+                try:
+                    _board_instance.release_session()
+                except Exception:
+                    pass
+                _board_instance = None
+
+        # create and prepare new session
+        board = BoardShim(BOARD_ID, params)
+        board.prepare_session()
+        _board_instance = board
+        print("Prepared new board session.")
+        return board
+
+    except Exception as e:
+        # If BrainFlow reports "already exists" in logs but raised, try returning the singleton
+        print("connectMuse error:", e)
+        if _board_instance is not None:
+            try:
+                _board_instance.get_sampling_rate(BOARD_ID)
+                print("Returning existing board after error.")
+                return _board_instance
+            except Exception:
+                pass
+        return None
+    
 
 def detect_stress(current_ratio, baseline_ratios):
     #Define threshold values based on research paper (I need to find one)
@@ -28,7 +70,7 @@ def detect_stress(current_ratio, baseline_ratios):
 
 def record_calm_state(board, board_id, sampling_rate):
     print("Recording calm baseline for 10 seconds...")
-    calm_data = read_data(board, 60)                         # your existing read_data()
+    calm_data = read_data(board, 10)                         # your existing read_data()
     eeg_calm = filter_EEG_from_data(board, board_id, calm_data)
     calm_df = process_eeg_data(eeg_calm, sampling_rate)
 
