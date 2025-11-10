@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 // Define the API URL based on the environment
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export default function Camera() {
     const videoRef = useRef<HTMLImageElement>(null);

@@ -58,7 +58,7 @@ export default function Recorder() {
                     const formData = new FormData()
                     formData.append('audio', wavBlob, 'recording.wav')
 
-                    const res = await fetch('http://localhost:5000/client_audio', {
+                    const res = await fetch('http://localhost:8000/client_audio', {
                         method: 'POST',
                         body: formData
                     })
@@ -102,7 +102,7 @@ export default function Recorder() {
         
         try {
             // Connect to WebSocket
-            websocket.current = new WebSocket('ws://localhost:5000/stream_audio')
+            websocket.current = new WebSocket('ws://localhost:8000/stream_audio')
             
             websocket.current.onopen = () => {
                 console.log('WebSocket connected')
