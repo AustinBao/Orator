@@ -1,4 +1,5 @@
 import NavBar from '../components/NavBar'
+import Hero from '../components/Hero'
 import ProductDescription from '../components/ProductDescription'
 import AboutUs from '../components/AboutUs'
 import HowItWorks from '../components/HowItWorks'
@@ -13,10 +14,10 @@ function Home() {
   const aboutUsRef = useRef(null);
 
   return (
-    <div className="bg-indigo-50 min-h-screen w-full flex flex-col items-center w-full">
-      <div className="flex flex-col items-center p-6 w-9/10 gap-16">
-        <div className="h-10"></div> { /* adsfasdfadsf */ }
-        <NavBar ProductDesc={productDescRef} AboutUs={aboutUsRef} HowItWorks={howItWorksRef} /> 
+    <div className="min-h-screen w-full flex flex-col items-center">
+      <NavBar ProductDesc={productDescRef} AboutUs={aboutUsRef} HowItWorks={howItWorksRef} />
+      <Hero />
+      <div className="flex flex-col items-center w-full">
         <ProductDescription ref={productDescRef} />
         <HowItWorks ref={howItWorksRef} />
         <AboutUs ref={aboutUsRef} />
