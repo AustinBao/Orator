@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
 from flask_cors import CORS
 from flask_sock import Sock
 from audio.speech_to_text import transcribe_audio
@@ -9,7 +9,9 @@ import base64
 import queue
 import threading
 import time
+import cv2
 from dotenv import load_dotenv
+from video.gesture import process_frame
 
 # Load environment variables
 load_dotenv()
@@ -18,19 +20,58 @@ app = Flask(__name__)
 CORS(app)
 sock = Sock(app)
 
-# Load script from file and create analyzer
-script_path = "audio/script.txt"
-try:
-    with open(script_path, 'r', encoding='utf-8') as f:
-        presentation_script = f.read()
-    presentation_analyzer = PresentationAnalyzer(presentation_script)
-except Exception as e:
-    print(f"Could not load script.txt: {e}")
-    presentation_analyzer = None
+# Initialize camera
+camera = cv2.VideoCapture(0)
+camera.set(cv2.CAP_PROP_BUFFERSIZE, 5)
+
+presentation_analyzer = PresentationAnalyzer("")
 
 @app.route("/")
 def home():
     return jsonify({"message": "Flask backend running!"})
+
+def gen_frames():
+    global latest_gesture_data
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        
+        # Process frame with gesture analysis
+        result = None
+        try:
+            result = process_frame(frame)
+            if result:
+                # Update the latest gesture data
+                latest_gesture_data = result
+        except Exception as e:
+            print(f"Error processing frame with gesture analysis: {e}")
+        
+        # Encode frame as JPEG
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame_bytes = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+# Global variable to store the latest gesture analysis results
+latest_gesture_data = {}
+
+@app.route('/gesture_data')
+def get_gesture_data():
+    return jsonify(latest_gesture_data or {"message": "No gesture data available yet"})
+
+@app.route('/video_feed')
+def video_feed():
+    def generate():
+        global latest_gesture_data
+        for frame_with_gestures in gen_frames():
+            # Extract gesture data from the frame generation process
+            if hasattr(frame_with_gestures, 'gesture_data'):
+                latest_gesture_data = frame_with_gestures.gesture_data
+            yield frame_with_gestures
+    
+    return Response(generate(),
+                  mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route("/client_audio", methods=['POST'])
@@ -50,6 +91,20 @@ def client_audio():
     else:
         return jsonify({"status": "error", "message": "No audio file received"}), 400
 
+@app.route('/transcript', methods=['POST'])
+def save_transcript():
+    try:
+        transcript = request.get_json()
+        print("Received transcript:", transcript)
+        global presentation_analyzer
+        presentation_analyzer = PresentationAnalyzer(transcript)
+        
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Failed to receive transcription: {str(e)}"
+        })
+    return jsonify({"status": "success", "received": ""})
 
 @sock.route('/stream_audio')
 def stream_audio(ws):
