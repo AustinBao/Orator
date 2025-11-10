@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@theme {
+  --color-custom-orange: #fea86f;
+  --color-custom-pink: #ffdef3;
+}
+
 @layer base {
   html, body, #root {
     @apply h-full w-full m-0 p-0;

@@ -1,59 +1,75 @@
-import { motion, useTransform, useScroll } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import GetStartedButton from "./GetStartedButton"
 
 const Example = () => {
   return (
-    <div className="">
-      <HorizontalScrollCarousel />
+    <div className="w-full">
+      <StackedCards />
     </div>
   );
 };
 
-const HorizontalScrollCarousel = () => {
-  const targetRef = useRef(null);
+const StackedCards = () => {
+  const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
-    target: targetRef,
+    target: containerRef,
+    offset: ["start 0.8", "end 0.2"]
   });
 
-  const x = useTransform(scrollYProgress, [0, 1], ["50%", "-80%"]);
-
   return (
-    <section ref={targetRef} className="relative h-[250vh]">
-      <div className="sticky top-0 flex h-screen w-screen items-center overflow-hidden bg-gradient-to-b from-transparent via-pink-100 to-transparent">
-        <motion.div style={{ x }} className="flex gap-4">
-          {cards.map((card) => {
-            return <Card card={card} key={card.id} />;
-          })}
-        </motion.div>
+    <section ref={containerRef} className="relative py-20">
+      <div className="max-w-7xl mx-auto px-20">
+        {cards.map((card, index) => {
+          const start = index * 0.15;
+          const end = start + 0.2;
+          
+          return (
+            <Card 
+              key={card.id} 
+              card={card} 
+              index={index}
+              progress={scrollYProgress}
+              range={[start, end]}
+            />
+          );
+        })}
       </div>
     </section>
   );
 };
 
-const Card = ({ card }) => {
+const Card = ({ card, index, progress, range }) => {
+  const x = useTransform(progress, range, [-200, 0]);
+  const scale = useTransform(progress, range, [0.9, 1]);
+  const opacity = useTransform(progress, range, [0, 1]);
+  const rotate = useTransform(progress, range, [-5, 0]);
+
   return (
-    <div
-      key={card.id}
-      className="group relative h-[450px] w-[600px] overflow-hidden bg-gradient-to-br from-rose-50/80 via-pink-100/40 to-transparent shadow-lg rounded-xl"
+    <motion.div
+      style={{
+        x,
+        scale,
+        opacity,
+        rotate,
+      }}
+      className="mb-12"
     >
-      <div
-        style={{
-          backgroundImage: `url(${card.url})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-        className="absolute inset-0 z-0 transition-transform duration-300 group-hover:scale-110"
-      ></div>
-      <div className="absolute inset-0 z-10 grid place-content-center">
-        <p className="p-8 text-6xl font-black uppercase text-slate-800 backdrop-blur-lg font-bold">
-          {card.title}
-        </p>
-        <div className="p-8">
-          {card.id === 1 && <GetStartedButton>Get Started</GetStartedButton>}
+      <div className="backdrop-blur-lg bg-white/40 border border-white/60 rounded-3xl shadow-2xl p-12 hover:bg-white/50 transition-all duration-300">
+        <div className="flex items-center gap-8">
+          <div className="text-8xl font-black text-custom-orange">
+            {card.id}
+          </div>
+          <div className="flex-1">
+            <h3 className="text-4xl font-bold text-gray-900 mb-4">
+              {card.title}
+            </h3>
+            <p className="text-xl text-gray-800 leading-relaxed">
+              {card.description}
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -61,23 +77,23 @@ export default Example;
 
 const cards = [
   {
-    url: "/imgs/abstract/1.jpg",
-    title: "1. Click 'Get Started'",
     id: 1,
+    title: "Click 'Get Started'",
+    description: "Begin your journey by clicking the Get Started button. Set up your presentation environment in seconds.",
   },
   {
-    url: "/imgs/abstract/2.jpg",
-    title: "2. Upload Your Script",
     id: 2,
+    title: "Upload Your Script",
+    description: "Upload or type your presentation script. Highlight key points you want to emphasize during your speech.",
   },
   {
-    url: "/imgs/abstract/3.jpg",
-    title: "3. Press 'Start Recording'",
     id: 3,
+    title: "Connect Your Devices",
+    description: "Connect your Muse S headset for EEG monitoring and enable your camera for gesture tracking.",
   },
   {
-    url: "/imgs/abstract/4.jpg",
-    title: "4. Present!",
     id: 4,
+    title: "Present with Confidence",
+    description: "Start presenting! Get real-time feedback on your body language, speech, and mental state as you go.",
   },
 ];
