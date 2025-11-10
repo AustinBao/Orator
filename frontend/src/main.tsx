@@ -9,14 +9,19 @@ import {
 import './global.css'
 import App from './pages/App.tsx'
 import Home from './pages/Home.tsx'
+import Dashboard from './pages/Dashboard.tsx'
+import PresentationMode from './pages/PresentationMode.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <>
       <Router>
         <Routes>
-          <Route exact path="/" element={<Home />}/>
-          <Route exact path="/app" element={<App />}/>
+          <Route path="/" element={<Home />}/>
+          <Route path="/app" element={<App />}/>
+          <Route path="/dashboard" element={<Dashboard />}/>
+          <Route path="/presentation" element={<PresentationMode />}/>
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </>
