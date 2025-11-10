@@ -21,17 +21,12 @@ The platform enables users to record practice sessions, receive data-driven insi
 
 ## **Tech Stack**
 
-Frontend: React + TypeScript + TailwindCSS
-
-Backend: Flask (Python)
-
-AI Models:
-
-Google Cloud Speech-to-Text API
-
-YOLOv11 for gesture detection
-
-BrainFlow + Muse EEG for emotion tracking
+- Frontend: React + TypeScript + TailwindCSS
+- Backend: Flask (Python)
+- AI Models:
+    - Google Cloud Speech-to-Text API
+    - YOLOv11 for gesture detection
+    - BrainFlow + Muse EEG for emotion tracking
 
 ## **Installation**
 1. Clone the Repository
@@ -65,12 +60,12 @@ npm run dev
 ## **How It Works**
 
 
-- The user records a presentation through the frontend recorder.
-- Audio data is sent to the Flask backend, which calls Google Cloud Speech-to-Text for transcription.
-- The system compares speech with the uploaded script to analyze clarity and focus.
-- YOLOv11 processes the video feed to detect key gestures and posture issues.
-- EEG data from Muse tracks confidence and stress levels.
-- A feedback report summarizes strengths and areas for improvement.
+1. The user records a presentation through the frontend recorder.
+1. Audio data is sent to the Flask backend, which calls Google Cloud Speech-to-Text for transcription.
+1. The system compares speech with the uploaded script to analyze clarity and focus.
+1. YOLOv11 processes the video feed to detect key gestures and posture issues.
+1. EEG data from Muse tracks confidence and stress levels.
+1. A feedback report summarizes strengths and areas for improvement.
 
 
 ## _Business Model_
