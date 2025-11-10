@@ -7,9 +7,6 @@ import type { RecorderHandle, FeedbackMessage } from '../components/Recorder';
 import SimplePDFViewer from '../components/SimplePDFViewer';
 import type { EegStatusDigest } from '../components/EEG';
 
-const lightGradient = 'bg-gradient-to-br from-indigo-50 via-white to-sky-100 text-slate-900';
-const darkGradient = 'bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100';
-
 interface PresentationNavState {
   boardInfo?: Record<string, unknown>;
   baselineRatios?: Record<string, number>;
@@ -34,7 +31,6 @@ interface GestureToast {
 }
 
 export default function PresentationMode() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [presentationFile, setPresentationFile] = useState<File | null>(null);
   const [presentationSummary, setPresentationSummary] = useState<string | null>(null);
   const [isPresenting, setIsPresenting] = useState(false);
@@ -188,27 +184,21 @@ export default function PresentationMode() {
     : 0;
 
   return (
-    <div className={`${isDarkMode ? darkGradient : lightGradient} min-h-screen`}>
+    <div className="bg-gradient-to-br from-rose-950 via-slate-900 to-orange-950 text-slate-100 min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-indigo-400">Presentation Mode</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-orange-400">Presentation Mode</p>
             <h1 className="text-4xl font-bold mt-2">Live Monitoring & Coaching</h1>
-            <p className="text-sm text-indigo-300 mt-1">Keep an eye on EEG, slides, and speech feedback in one view.</p>
+            <p className="text-sm text-orange-300 mt-1">Keep an eye on EEG, slides, and speech feedback in one view.</p>
           </div>
           <div className="flex flex-wrap gap-3 items-center">
             <Link
               to="/dashboard"
-              className={`${accentButton} ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-900 text-white'}`}
+              className={`${accentButton} bg-white/10 text-white hover:bg-white/20`}
             >
-              ← Go previous
+              ← Back to Dashboard
             </Link>
-            <button
-              onClick={() => setIsDarkMode(v => !v)}
-              className={`${accentButton} ${isDarkMode ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/40' : 'bg-slate-900 text-white'}`}
-            >
-              {isDarkMode ? 'Light mode' : 'Dark mode'}
-            </button>
           </div>
         </header>
 
@@ -224,7 +214,7 @@ export default function PresentationMode() {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-xs uppercase tracking-[0.4em] text-indigo-300">Auto-saving session data</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-orange-300">Auto-saving session data</p>
             <button
               onClick={handleTogglePresentation}
               disabled={isStartingPresentation && !isPresenting}
@@ -248,7 +238,7 @@ export default function PresentationMode() {
           />
           <label
             htmlFor="live-pdf-upload"
-            className="w-full px-5 py-3 bg-indigo-500 hover:bg-indigo-400 text-white rounded-xl cursor-pointer font-semibold transition-colors"
+            className="w-full px-5 py-3 bg-orange-500 hover:bg-orange-400 text-white rounded-xl cursor-pointer font-semibold transition-colors"
           >
             {presentationFile ? 'Change presentation PDF' : 'Upload presentation PDF'}
           </label>
@@ -258,7 +248,7 @@ export default function PresentationMode() {
           <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-col flex-1 min-w-[280px] relative overflow-visible">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-semibold">Live Camera</h2>
-              <span className="text-xs uppercase tracking-[0.3em] text-indigo-300">Gesture view</span>
+              <span className="text-xs uppercase tracking-[0.3em] text-orange-300">Gesture view</span>
             </div>
             <div className="rounded-2xl overflow-hidden border border-white/10 flex-1">
               <Camera />
@@ -282,9 +272,9 @@ export default function PresentationMode() {
           <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-col w-fit max-w-full">
             <div className="flex flex-wrap items-center gap-3 mb-3">
               <h2 className="text-xl font-semibold">Presentation Viewer</h2>
-              <span className="text-xs uppercase tracking-[0.3em] text-indigo-300">PDF</span>
+              <span className="text-xs uppercase tracking-[0.3em] text-orange-300">PDF</span>
               {presentationSummary && (
-                <p className="text-sm text-indigo-200 truncate">{presentationSummary}</p>
+                <p className="text-sm text-orange-200 truncate">{presentationSummary}</p>
               )}
             </div>
             <div className="rounded-2xl bg-slate-900/30 p-3 flex-1 overflow-auto">
@@ -301,13 +291,13 @@ export default function PresentationMode() {
         <section className="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">AI Live Coach</h2>
-            <span className="text-xs uppercase tracking-[0.3em] text-indigo-300">Feedback stream</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-orange-300">Feedback stream</span>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-slate-900/30 flex flex-col">
               <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                <p className="text-sm text-indigo-200">Latest feedback</p>
-                <span className="text-xs text-indigo-300">Live</span>
+                <p className="text-sm text-orange-200">Latest feedback</p>
+                <span className="text-xs text-orange-300">Live</span>
               </div>
               <div
                 ref={feedbackScrollRef}
@@ -329,7 +319,7 @@ export default function PresentationMode() {
                       }`}
                     >
                       <p className="whitespace-pre-line">{msg.feedback}</p>
-                      <div className="flex items-center justify-between mt-2 text-xs text-indigo-200">
+                      <div className="flex items-center justify-between mt-2 text-xs text-orange-200">
                         {msg.stuttering_detected && (
                           <span className="flex items-center gap-1 text-yellow-300">
                             <span>⚠️</span> Stuttering detected
@@ -344,9 +334,9 @@ export default function PresentationMode() {
             </div>
             {isMuseReady ? (
               <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 space-y-3 text-sm text-slate-200">
-                <p className="text-xs uppercase tracking-[0.3em] text-indigo-300">EEG live activity</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-orange-300">EEG live activity</p>
                 {eegDigest ? (
-                  <div className="rounded-2xl border border-indigo-400/40 bg-gradient-to-r from-indigo-500/10 to-rose-500/10 p-4 space-y-3">
+                  <div className="rounded-2xl border border-orange-400/40 bg-gradient-to-r from-rose-500/10 to-orange-500/10 p-4 space-y-3">
                     <div className="flex items-center gap-3">
                       <span
                         className={`h-3 w-3 rounded-full ${
@@ -357,12 +347,12 @@ export default function PresentationMode() {
                         <p className="font-semibold">
                           {eegDigest.stressed ? 'Stress detected' : 'Calm & focused'}
                         </p>
-                        <p className="text-xs text-indigo-200">
+                        <p className="text-xs text-orange-200">
                           {new Date(eegDigest.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
-                    <p className="text-sm text-indigo-100">{eegDigest.message}</p>
+                    <p className="text-sm text-orange-100">{eegDigest.message}</p>
                     {eegDigest.stressed ? (
                       <ul className="text-xs text-rose-100 space-y-1 list-disc list-inside">
                         <li>Pause for a deep breath.</li>
@@ -380,7 +370,7 @@ export default function PresentationMode() {
               </div>
             ) : (
               <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 space-y-3 text-sm text-slate-200">
-                <p className="text-xs uppercase tracking-[0.3em] text-indigo-300">Session status</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-orange-300">Session status</p>
                 <p>
                   • Recording:{' '}
                   <span className={isPresenting ? 'text-emerald-300' : 'text-slate-400'}>
@@ -407,11 +397,11 @@ export default function PresentationMode() {
               <>
                 <p className="leading-relaxed whitespace-pre-wrap">{transcriptData.realtime}</p>
                 {transcriptData.partial && (
-                  <p className="mt-3 text-indigo-200 italic">{transcriptData.partial}</p>
+                  <p className="mt-3 text-orange-200 italic">{transcriptData.partial}</p>
                 )}
               </>
             ) : (
-              <p className="text-indigo-200 text-sm">Start presenting to populate the live transcript.</p>
+              <p className="text-orange-200 text-sm">Start presenting to populate the live transcript.</p>
             )}
           </div>
         </section>

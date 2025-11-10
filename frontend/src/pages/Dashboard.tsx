@@ -14,9 +14,6 @@ const steps = [
   { id: 1, title: 'Upload Slides & Script' }
 ];
 
-const lightGradient = 'bg-gradient-to-br from-indigo-50 via-white to-sky-100 text-slate-900';
-const darkGradient = 'bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-slate-100';
-
 type ConnectionStep = 'idle' | 'connecting' | 'baseline' | 'complete' | 'error';
 
 interface BoardInfo {
@@ -37,7 +34,6 @@ interface ApiResponse {
 }
 
 export default function Dashboard() {
-  const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentStep, setCurrentStep] = useState(0);
 
   const [museConnected, setMuseConnected] = useState(false);
@@ -70,11 +66,9 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
 
-  const themeClasses = isDarkMode ? darkGradient : lightGradient;
-  const cardBase = isDarkMode
-    ? 'bg-white/5 border border-white/10'
-    : 'bg-white shadow-xl border border-slate-200';
-  const subtle = isDarkMode ? 'text-slate-300' : 'text-slate-600';
+  const themeClasses = 'bg-gradient-to-br from-rose-950 via-slate-900 to-orange-950 text-slate-100';
+  const cardBase = 'bg-white/5 border border-white/10';
+  const subtle = 'text-slate-300';
   const accentButton =
     'px-4 py-2 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
 
@@ -279,7 +273,7 @@ export default function Dashboard() {
       <section className={`${cardBase} rounded-3xl p-6 space-y-6`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-indigo-400">Step 1</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-orange-400">Step 1</p>
             <h2 className="text-2xl font-semibold mt-1">Muse S Status</h2>
             <p className={`${subtle} text-sm`}>Connect your headband and review live signals.</p>
           </div>
@@ -297,7 +291,7 @@ export default function Dashboard() {
             onClick={handleConnectMuse}
             disabled={isDeviceConnecting}
             className={`${accentButton} text-white ${
-              isDeviceConnecting ? 'bg-indigo-800 cursor-wait' : 'bg-indigo-500 hover:bg-indigo-400'
+              isDeviceConnecting ? 'bg-orange-800 cursor-wait' : 'bg-orange-500 hover:bg-orange-400'
             }`}
           >
             {isDeviceConnecting ? 'Connecting…' : 'Connect device'}
@@ -305,16 +299,16 @@ export default function Dashboard() {
         
           <button
             onClick={handleSkipMuse}
-            className={`${accentButton} ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-100 text-slate-900 hover:bg-slate-200'}`}
+            className={`${accentButton} bg-white/10 text-white hover:bg-white/20`}
           >
             Skip device setup
           </button>
         </div>
 
-        <div className="rounded-2xl p-4 bg-gradient-to-r from-blue-500/10 via-indigo-500/10 to-cyan-500/10 border border-white/10">
-          <p className="text-xs uppercase tracking-[0.3em] text-indigo-300 mb-2">Live activity</p>
+        <div className="rounded-2xl p-4 bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-orange-500/10 border border-white/10">
+          <p className="text-xs uppercase tracking-[0.3em] text-orange-300 mb-2">Live activity</p>
           <div className="relative h-20 rounded-xl overflow-hidden bg-slate-900/40">
-            <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/60 via-indigo-400/50 to-blue-500/60 blur-2xl opacity-60 animate-pulse" />
+            <div className="absolute inset-0 bg-gradient-to-r from-rose-400/60 via-pink-400/50 to-orange-500/60 blur-2xl opacity-60 animate-pulse" />
             <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[pulse_2.5s_ease-in-out_infinite]" />
           </div>
         </div>
@@ -337,7 +331,7 @@ export default function Dashboard() {
                   </div>
                   <div className="h-2 rounded-full bg-slate-700/40">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-blue-500"
+                      className="h-full rounded-full bg-gradient-to-r from-rose-400 via-pink-500 to-orange-500"
                       style={{ width: `${strength}%` }}
                     />
                   </div>
@@ -345,7 +339,7 @@ export default function Dashboard() {
               ))
             )}
             {connectionMessage && (
-              <p className="text-xs text-indigo-200">{connectionMessage}</p>
+              <p className="text-xs text-orange-200">{connectionMessage}</p>
             )}
             {lastUpdated && (
               <p className="text-xs text-slate-400">Last updated at {lastUpdated}</p>
@@ -361,18 +355,18 @@ export default function Dashboard() {
               <h3 className="text-xl font-semibold">Baseline Recorder</h3>
               <p className={`${subtle} text-sm`}>60-second calm capture for trustworthy ratios.</p>
             </div>
-            <span className="text-sm text-indigo-300">{Math.round(baselineProgress)}%</span>
+            <span className="text-sm text-orange-300">{Math.round(baselineProgress)}%</span>
           </div>
           <div className="h-3 rounded-full bg-slate-800/30 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-cyan-400 via-indigo-500 to-blue-500 transition-all duration-500"
+              className="h-full bg-gradient-to-r from-rose-400 via-pink-500 to-orange-500 transition-all duration-500"
               style={{ width: `${baselineProgress}%` }}
             />
           </div>
           <button
             onClick={handleStartBaseline}
             disabled={isBaselineRecording}
-            className={`${accentButton} text-white bg-indigo-500 hover:bg-indigo-400 disabled:opacity-60 disabled:cursor-not-allowed`}
+            className={`${accentButton} text-white bg-orange-500 hover:bg-orange-400 disabled:opacity-60 disabled:cursor-not-allowed`}
           >
             {isBaselineRecording ? 'Recording calm baseline...' : 'Record calm baseline'}
           </button>
@@ -381,7 +375,7 @@ export default function Dashboard() {
         <div className={`${cardBase} rounded-3xl p-6 space-y-3`}>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold">Current Ratios</h3>
-            <span className="text-xs uppercase tracking-[0.3em] text-indigo-300">Live</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-orange-300">Live</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {(baselineRatios
@@ -394,20 +388,20 @@ export default function Dashboard() {
             ).map(ratio => (
               <div
                 key={ratio.label}
-                className="rounded-2xl p-4 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border border-white/10"
+                className="rounded-2xl p-4 bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-white/10"
               >
-                <p className="text-xs uppercase tracking-wide text-indigo-200">{ratio.label}</p>
+                <p className="text-xs uppercase tracking-wide text-orange-200">{ratio.label}</p>
                 <p className="text-3xl font-semibold mt-1">
                   {typeof ratio.value === 'number' ? ratio.value.toFixed(2) : ratio.value}
                 </p>
-                {'tone' in ratio && <p className="text-xs mt-1 text-indigo-200">{ratio.tone}</p>}
+                {'tone' in ratio && <p className="text-xs mt-1 text-orange-200">{ratio.tone}</p>}
               </div>
             ))}
           </div>
           <div className="grid grid-cols-3 gap-3">
             {Object.entries(bandPower).map(([band, value], idx) => (
               <div key={band} className="rounded-2xl p-3 bg-slate-900/40 border border-white/10">
-                <p className="text-xs uppercase tracking-wide text-indigo-200">{band}</p>
+                <p className="text-xs uppercase tracking-wide text-orange-200">{band}</p>
                 <p className="text-lg font-semibold mt-1">{value.toFixed(1)} μV</p>
                 <div className="mt-2 h-2 rounded-full bg-slate-800/60 overflow-hidden">
                   <div
@@ -428,12 +422,12 @@ export default function Dashboard() {
       <section className={`${cardBase} rounded-3xl p-6 space-y-4`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-indigo-400">Step 2</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-orange-400">Step 2</p>
             <h2 className="text-2xl font-semibold mt-1">Presentation Uploader</h2>
             <p className={`${subtle} text-sm`}>Load your PDF slides for rehearsal.</p>
           </div>
           {pdfMeta && (
-            <div className="text-xs text-indigo-200">
+            <div className="text-xs text-orange-200">
               Loaded <span className="font-semibold">{pdfMeta}</span>
             </div>
           )}
@@ -454,20 +448,18 @@ export default function Dashboard() {
       <section className={`${cardBase} rounded-3xl p-6 space-y-4`}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Script Uploader</h2>
-          <span className="text-sm text-indigo-300">Word count: {wordCount}</span>
+          <span className="text-sm text-orange-300">Word count: {wordCount}</span>
         </div>
-        <div className="rounded-3xl border border-dashed border-indigo-300 bg-gradient-to-br from-indigo-500/10 to-cyan-500/10 p-4">
+        <div className="rounded-3xl border border-dashed border-orange-300 bg-gradient-to-br from-rose-500/10 to-orange-500/10 p-4">
           <textarea
             value={scriptText}
             onChange={(e) => setScriptText(e.target.value)}
-            className={`w-full h-64 rounded-2xl p-4 resize-none ${
-              isDarkMode ? 'bg-slate-950/60 text-white border border-white/10' : 'bg-white text-slate-900 border border-slate-200'
-            }`}
+            className="w-full h-64 rounded-2xl p-4 resize-none bg-slate-950/60 text-white border border-white/10"
             placeholder="Paste or type your script here. Highlight key points just like in Textbox."
           />
           <div className="flex flex-col gap-2 mt-3">
             <div className="flex justify-end gap-3">
-              <button className={`${accentButton} ${isDarkMode ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-200 text-slate-900 hover:bg-slate-300'}`}>
+              <button className={`${accentButton} bg-white/10 text-white hover:bg-white/20`}>
                 Preview
               </button>
               <button
@@ -475,8 +467,8 @@ export default function Dashboard() {
                 disabled={scriptSaveStatus === 'saving'}
                 className={`${accentButton} text-white ${
                   scriptSaveStatus === 'saving'
-                    ? 'bg-indigo-800 cursor-wait'
-                    : 'bg-indigo-500 hover:bg-indigo-400'
+                    ? 'bg-orange-800 cursor-wait'
+                    : 'bg-orange-500 hover:bg-orange-400'
                 }`}
               >
                 {scriptSaveStatus === 'saving' ? 'Saving…' : 'Save script'}
@@ -489,7 +481,7 @@ export default function Dashboard() {
                     ? 'text-emerald-300'
                     : scriptSaveStatus === 'error'
                       ? 'text-rose-300'
-                      : 'text-indigo-200'
+                      : 'text-orange-200'
                 }`}
               >
                 {scriptSaveMessage}
@@ -507,18 +499,12 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-indigo-400">Setup / Dashboard</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-orange-400">Setup / Dashboard</p>
             <h1 className="text-4xl font-bold mt-2">EEG Presentation Coach</h1>
             <p className={`${subtle} text-sm mt-1`}>Follow the guided steps before you start presenting.</p>
           </div>
           <div className="flex flex-wrap gap-3 items-center">
-            <button
-              onClick={() => setIsDarkMode(v => !v)}
-              className={`${accentButton} ${isDarkMode ? 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/40' : 'bg-slate-900 text-white'}`}
-            >
-              {isDarkMode ? 'Light mode' : 'Dark mode'}
-            </button>
-            <Link to="/" className="text-sm font-semibold text-indigo-400 hover:text-indigo-300">
+            <Link to="/" className="text-sm font-semibold text-orange-400 hover:text-orange-300">
               Back to landing
             </Link>
           </div>
@@ -532,11 +518,11 @@ export default function Dashboard() {
                   key={step.id}
                   className={`flex-1 min-w-[180px] rounded-2xl p-4 border ${
                     currentStep === index
-                      ? 'bg-gradient-to-r from-indigo-500/20 to-cyan-500/20 border-indigo-300'
+                      ? 'bg-gradient-to-r from-rose-500/20 to-orange-500/20 border-orange-300'
                       : 'border-white/10'
                   }`}
                 >
-                  <p className="text-xs uppercase tracking-[0.3em] text-indigo-300">Step {index + 1}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-orange-300">Step {index + 1}</p>
                   <p className="text-lg font-semibold mt-1">{step.title}</p>
                 </div>
               ))}
@@ -547,7 +533,7 @@ export default function Dashboard() {
                 disabled={currentStep === 0}
                 className={`${accentButton} ${currentStep === 0 ? 'bg-slate-500/30 text-slate-300 cursor-not-allowed' : 'bg-white/10 text-white hover:bg-white/20'}`}
               >
-                Go previous
+                ← Previous
               </button>
               <button
                 onClick={goNext}
@@ -555,7 +541,7 @@ export default function Dashboard() {
                 className={`${accentButton} ${
                   currentStep === steps.length - 1
                     ? 'bg-slate-500/30 text-slate-300 cursor-not-allowed'
-                    : 'bg-indigo-500 text-white hover:bg-indigo-400'
+                    : 'bg-orange-500 text-white hover:bg-orange-400'
                 }`}
               >
                 Next
@@ -598,9 +584,9 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function gradientForBand(index: number) {
-  if (index === 0) return 'from-cyan-400 to-blue-500';
-  if (index === 1) return 'from-indigo-400 to-purple-500';
-  return 'from-violet-400 to-pink-500';
+  if (index === 0) return 'from-rose-400 to-pink-500';
+  if (index === 1) return 'from-pink-400 to-orange-500';
+  return 'from-orange-400 to-amber-500';
 }
 
 interface ConnectionModalProps {
@@ -650,8 +636,8 @@ function ConnectionModal({ isOpen, step, error, onClose }: ConnectionModalProps)
           {error ?? copy.description}
         </p>
         {!(step === 'complete' || step === 'error') && (
-          <div className="mt-6 flex items-center gap-3 text-indigo-200">
-            <span className="h-3 w-3 rounded-full bg-indigo-400 animate-pulse" />
+          <div className="mt-6 flex items-center gap-3 text-orange-200">
+            <span className="h-3 w-3 rounded-full bg-orange-400 animate-pulse" />
             <span className="text-sm">This may take up to a minute.</span>
           </div>
         )}
@@ -659,7 +645,7 @@ function ConnectionModal({ isOpen, step, error, onClose }: ConnectionModalProps)
           <div className="mt-6 flex justify-end">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white font-semibold transition-colors"
+              className="px-4 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white font-semibold transition-colors"
             >
               Close
             </button>

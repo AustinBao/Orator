@@ -1,5 +1,6 @@
 [phases.setup]
 aptPkgs = [
+    "libgl1",
     "libgl1-mesa-glx",
     "libglib2.0-0",
     "libsm6",
@@ -22,4 +23,3 @@ cmds = [
 
 [start]
 cmd = "python main.py"
-
