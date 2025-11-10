@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 
 const AboutUs = forwardRef((props, ref) => {
   
-  const box_styling = "border p-4 rounded-md h-75"
+  const box_styling = "border p-4 rounded-md h-75 shadow-lg px-10"
   const title_styling = "text-2xl font-semibold text-center"
   const desc_styling = "text-md mt-5 text-center"
   return (
