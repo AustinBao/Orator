@@ -11,7 +11,6 @@ from flask_cors import CORS
 from flask_sock import Sock
 
 #speech to text import
-from audio.speech_to_text import transcribe_audio
 from audio.streaming_speech_to_text import StreamingSpeechRecognizer
 from audio.openai import PresentationAnalyzer
 
