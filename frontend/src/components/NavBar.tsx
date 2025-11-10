@@ -16,13 +16,13 @@ export default function NavBar({ ProductDesc, AboutUs, HowItWorks }) {
     }
   }
 
-  const buttonClass = "min-w-30 relative px-6 py-2 rounded-full text-black bg-transparent transition duration-300 hover:text-white before:absolute before:inset-0 before:rounded-full before:p-[1px] before:bg-gradient-to-r before:from-indigo-400 before:to-purple-400 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100 before:-z-10 overflow-hidden"
+  const buttonClass = "min-w-30 relative px-6 py-2 rounded-full text-black text-lg font-bold bg-transparent transition duration-300 before:absolute before:inset-0 before:rounded-full before:p-[1px] before:bg-gradient-to-br before:from-custom-pink before:to-custom-orange before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100 before:-z-10 overflow-hidden"
 
   return (
-    <div ref={navBarRef} className="fixed outline-solid outline-sky-100 bg-white backdrop-blur-md px-8 py-2 mx-60 my-2 rounded-full space-x-20 z-50">
-      <button className={buttonClass} onClick={() => scrollToElement(ProductDesc) }>Orator AI</button>
+    <div ref={navBarRef} className="fixed top-12 bg-white backdrop-blur-md px-8 py-2 mx-60 rounded-full space-x-20 z-50 shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+      <button className={buttonClass} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Orator</button>
       <button className={buttonClass} onClick={() => scrollToElement(HowItWorks)}>How it Works</button>
-      <button className={buttonClass} onClick={() => scrollToElement(AboutUs)}>About Us</button>
+      <button className={buttonClass} onClick={() => scrollToElement(AboutUs)}>Features</button>
       <GetStartedButton>Get Started</GetStartedButton>
     </div>
   );
