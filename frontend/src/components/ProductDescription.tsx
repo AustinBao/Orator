@@ -1,9 +1,11 @@
 import React, { forwardRef } from 'react';
+import GetStartedButton from '../components/GetStartedButton'
 
 const ProductDescription = forwardRef((props, ref) =>{
   return (
-    <div ref={ref} className="flex flex-col justify-center items-center">
-      <h1 className="text-5xl my-10 text-center w-4/10">Upgrade your <span className="font-bold">Public Speaking</span> Skills</h1>
+    <div ref={ref} className="flex flex-col justify-center items-center w-full gap-8">
+      <h1 className="text-5xl text-center w-4/10">Upgrade your <span className="font-bold">Public Speaking</span> Skills</h1>
+      <GetStartedButton>Try Orator Now</GetStartedButton>
      <p className="text-lg"> 
     LUGGAGE SETS 3 PIECE, 3-YEARS GLOBAL VIP WARRANTY: Comfortable travel, worry-free use. These confidences come from Vipbox's excellent standards, VIP exclusive 1V1 service and 3-years global User support. If you have any questions, please feel free to let us know. Where every mile counts
     SUPER DURABLE, PC LIGHTWEIGHT HARDSHELL LUGGAGE: 100% Polycarbonate (PC) material travel suitcase is the representative of lightweight and durable. Every part of the luggage and even every screw is strictly inspected and then sent to you after passing professional luggage testing, designed to withstand the harshest environments. Durability will be proven by time

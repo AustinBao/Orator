@@ -15,7 +15,7 @@ function Home() {
   return (
     <div className="bg-indigo-50 min-h-screen w-full flex flex-col items-center w-full">
       <div className="flex flex-col items-center p-6 w-9/10 gap-16">
-        <div className="min-h-4"></div> { /* adsfasdfadsf */ }
+        <div className="h-10"></div> { /* adsfasdfadsf */ }
         <NavBar ProductDesc={productDescRef} AboutUs={aboutUsRef} HowItWorks={howItWorksRef} /> 
         <ProductDescription ref={productDescRef} />
         <HowItWorks ref={howItWorksRef} />
