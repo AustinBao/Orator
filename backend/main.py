@@ -40,8 +40,8 @@ CORS(app)
 sock = Sock(app)
 
 # Initialize camera
-camera = cv2.VideoCapture(0)
-camera.set(cv2.CAP_PROP_BUFFERSIZE, 5)
+camera = cv2.VideoCapture(0)  # pylint: disable=no-member
+camera.set(38, 5)  # CAP_PROP_BUFFERSIZE = 38
 
 presentation_analyzer = PresentationAnalyzer("")
 
@@ -57,17 +57,18 @@ def gen_frames():
             break
         
         # Process frame with gesture analysis
+        annotated_frame = frame  # Default to original frame
         result = None
         try:
-            result = process_frame(frame)
+            annotated_frame, result = process_frame(frame)
             if result:
                 # Update the latest gesture data
                 latest_gesture_data = result
         except Exception as e:
             print(f"Error processing frame with gesture analysis: {e}")
         
-        # Encode frame as JPEG
-        ret, buffer = cv2.imencode('.jpg', frame)
+        # Encode annotated frame (with YOLO keypoints/boxes) as JPEG
+        ret, buffer = cv2.imencode('.jpg', annotated_frame)  # pylint: disable=no-member 
         frame_bytes = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
@@ -99,23 +100,6 @@ def video_feed():
     return Response(generate(),
                   mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-@app.route("/client_audio", methods=['POST'])
-def client_audio():    
-    if 'audio' in request.files:
-        audio_file = request.files['audio']
-        audio_content = audio_file.read()
-        try:
-            response = transcribe_audio(audio_content)
-            return jsonify(response)
-            
-        except Exception as e:
-            return jsonify({
-                "status": "error",
-                "message": f"Transcription failed: {str(e)}"
-            }), 500
-    else:
-        return jsonify({"status": "error", "message": "No audio file received"}), 400
 
 @app.route('/transcript', methods=['POST'])
 def save_transcript():
