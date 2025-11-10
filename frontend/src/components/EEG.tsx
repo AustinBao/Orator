@@ -7,6 +7,18 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 type ConnectionStep = 'idle' | 'connecting' | 'baseline' | 'complete' | 'error';
 
+export interface EegStatusDigest {
+  stressed: boolean;
+  message: string;
+  timestamp: number;
+}
+
+interface EEGProps {
+  onStatusDigest?: (digest: EegStatusDigest | null) => void;
+  onConnectionChange?: (ready: boolean) => void;
+  shouldDetect?: boolean;
+}
+
 interface BoardInfo {
   board_id?: number;
   sampling_rate?: number;
@@ -99,7 +111,7 @@ function ConnectingModal({ isOpen, step, error, onClose }: ConnectingModalProps)
 
 const defaultMessage = 'Press “Connect with a Muse device” to fetch the latest message.';
 
-export default function EEG() {
+export default function EEG({ onStatusDigest, onConnectionChange, shouldDetect }: EEGProps = {}) {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [connectionStep, setConnectionStep] = useState<ConnectionStep>('idle');
@@ -115,6 +127,8 @@ export default function EEG() {
   const [isDetecting, setIsDetecting] = useState(false);
   const [detectionError, setDetectionError] = useState<string | null>(null);
   const [detectionStatus, setDetectionStatus] = useState<string>('Idle');
+  const [lastDetection, setLastDetection] = useState<EegStatusDigest | null>(null);
+  const [isReadyForDetection, setIsReadyForDetection] = useState(false);
 
   const detectionLoopRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const detectionActiveRef = useRef(false);
@@ -167,6 +181,9 @@ export default function EEG() {
     setIsConnecting(true);
     setError(null);
     setModalError(null);
+    setLastDetection(null);
+    setIsReadyForDetection(false);
+    onConnectionChange?.(false);
     updateModal('connecting');
 
     try {
@@ -189,6 +206,8 @@ export default function EEG() {
 
       setSuggestedMessage(message);
       setLastUpdated(new Date().toLocaleTimeString());
+      setIsReadyForDetection(true);
+      onConnectionChange?.(true);
 
       updateModal('complete');
     } catch (err) {
@@ -197,6 +216,8 @@ export default function EEG() {
       setError(message);
       setSuggestedMessage(null);
       setRawResponse(null);
+      setIsReadyForDetection(false);
+      onConnectionChange?.(false);
       updateModal('error', message);
     } finally {
       setIsConnecting(false);
@@ -218,6 +239,13 @@ export default function EEG() {
       setSuggestedMessage(message);
       setLastUpdated(new Date().toLocaleTimeString());
       setDetectionError(null);
+      const digest = {
+        stressed: Boolean(detectionPayload.stressed),
+        message,
+        timestamp: Date.now()
+      };
+      setLastDetection(digest);
+      onStatusDigest?.(digest);
 
       if (detectionPayload.current_ratio) {
         setBaselineRatios(prev => prev ?? null); // keep prior baseline
@@ -234,6 +262,7 @@ export default function EEG() {
       setIsDetecting(false);
       detectionActiveRef.current = false;
       clearDetectionLoop();
+      setLastDetection(null);
     }
   };
 
@@ -248,6 +277,7 @@ export default function EEG() {
     setIsDetecting(true);
     setDetectionError(null);
     setDetectionStatus('Starting detection…');
+    setLastDetection(null);
     pollDetection();
   };
 
@@ -256,6 +286,7 @@ export default function EEG() {
     setIsDetecting(false);
     setDetectionStatus('Cancelled');
     clearDetectionLoop();
+    setLastDetection(null);
   };
 
   useEffect(() => {
@@ -264,6 +295,23 @@ export default function EEG() {
       clearDetectionLoop();
     };
   }, []);
+
+  useEffect(() => {
+    onStatusDigest?.(lastDetection);
+  }, [lastDetection, onStatusDigest]);
+
+  useEffect(() => {
+    if (!shouldDetect) {
+      if (isDetecting) {
+        stopDetection();
+      }
+      return;
+    }
+
+    if (shouldDetect && !isDetecting && isReadyForDetection && !isConnecting) {
+      startDetection();
+    }
+  }, [shouldDetect, isDetecting, isReadyForDetection, isConnecting]);
 
   return (
     <div className="w-full max-w-4xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-10 shadow-lg">

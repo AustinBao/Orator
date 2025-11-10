@@ -6,7 +6,7 @@ orator/
 .env
 .env.*
 
-# GCP credentials
+# ignore GCP service account key
 gcp_key.json
 
 # OS files
