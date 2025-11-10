@@ -21,7 +21,7 @@ export default function Camera() {
     }, []);
 
     return (
-        <div className='w-[600px] h-[400px] bg-gray-400 flex justify-center items-center overflow-hidden'>
+        <div className='w-full h-full bg-gray-400 flex justify-center items-center overflow-hidden'>
             <img 
                 ref={videoRef}
                 alt="Video feed"

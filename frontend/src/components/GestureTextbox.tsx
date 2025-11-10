@@ -40,25 +40,29 @@ const GestureTextbox: React.FC<GestureTextboxProps> = ({ className = '' }) => {
 
     // Initial fetch
     fetchGestureData();
-    
+
     // Set up polling every 2 seconds
     const intervalId = setInterval(fetchGestureData, 2000);
-    
+
     return () => clearInterval(intervalId);
   }, []);
 
   // Helper function to get status text and color
   const getStatus = (value: number | undefined) => {
     if (value === undefined) return { text: 'N/A', color: 'text-gray-400' };
-    return value === 1 
-      ? { text: 'Detected', color: 'text-red-400' } 
+    return value === 1
+      ? { text: 'Detected', color: 'text-red-400' }
       : { text: 'Normal', color: 'text-green-400' };
   };
 
+  // detect if we have numeric gesture metrics (hide tips when true)
+  const hasMetrics = ['hipsway', 'pacing', 'headtilt', 'handtomouth', 'toostill']
+    .some((k) => (gestureData as any)[k] !== undefined);
+
   return (
-    <div className={`bg-white/10 backdrop-blur-sm rounded-lg p-4 h-full overflow-y-auto ${className}`}>
+    <div className={`bg-white/10 backdrop-blur-sm rounded-lg p-4 h-full min-h-0 overflow-y-auto ${className}`}>
       <h3 className="text-indigo-300 font-semibold mb-4">Gesture Analysis</h3>
-      
+
       {isLoading ? (
         <div className="text-gray-300 text-sm">Loading gesture analysis...</div>
       ) : error ? (
@@ -99,16 +103,18 @@ const GestureTextbox: React.FC<GestureTextboxProps> = ({ className = '' }) => {
           </div>
         </div>
       )}
-      
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <h4 className="text-indigo-200 text-sm font-medium mb-2">Tips:</h4>
-        <ul className="text-gray-300 text-sm space-y-1">
-          <li>• Keep your hands visible for better analysis</li>
-          <li>• Avoid crossing your arms</li>
-          <li>• Maintain good posture</li>
-          <li>• Move naturally while speaking</li>
-        </ul>
-      </div>
+
+      {!hasMetrics && (
+        <div className="mt-4 pt-4 border-t border-white/10">
+          <h4 className="text-indigo-200 text-sm font-medium mb-2">Tips:</h4>
+          <ul className="text-gray-300 text-sm space-y-1 mb-0">
+            <li>• Keep your hands visible for better analysis</li>
+            <li>• Avoid crossing your arms</li>
+            <li>• Maintain good posture</li>
+            <li>• Move naturally while speaking</li>
+          </ul>
+        </div>
+      )}
     </div>
   );
 };
