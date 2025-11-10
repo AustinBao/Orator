@@ -1,8 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { convertToWav } from '../utils/audioHelpers'
 import { RealtimeAudioCapture } from '../utils/realtimeAudioCapture'
-
-type RecordingMode = 'batch' | 'realtime'
 
 interface FeedbackMessage {
     id: number
@@ -12,18 +9,10 @@ interface FeedbackMessage {
 }
 
 export default function Recorder() {
-    const [mode, setMode] = useState<RecordingMode>('batch')
     const [isRecording, setIsRecording] = useState(false)
-    const [response, setResponse] = useState<any>(null)
-    const [isProcessing, setIsProcessing] = useState(false)
     const [realtimeTranscript, setRealtimeTranscript] = useState<string>('')
     const [partialTranscript, setPartialTranscript] = useState<string>('')
     const [feedbackMessages, setFeedbackMessages] = useState<FeedbackMessage[]>([])
-
-    // Batch mode refs
-    const mediaStream = useRef<MediaStream | null>(null)
-    const mediaRecorder = useRef<MediaRecorder | null>(null)
-    const chunks = useRef<Blob[]>([])
 
     // Realtime mode refs
     const audioCapture = useRef<RealtimeAudioCapture | null>(null)
@@ -31,70 +20,6 @@ export default function Recorder() {
     const feedbackEndRef = useRef<HTMLDivElement | null>(null)
 
     const startRecording = async () => {
-        setIsRecording(true)
-        setResponse(null)
-        
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-            mediaStream.current = stream
-            mediaRecorder.current = new MediaRecorder(stream)
-            
-            mediaRecorder.current.ondataavailable = (e: BlobEvent) => {
-                if (e.data.size > 0) {
-                    chunks.current.push(e.data)
-                }
-            }
-
-            mediaRecorder.current.onstop = async () => {
-                const webmBlob = new Blob(chunks.current, { type: 'audio/webm' })
-                chunks.current = []
-                
-                // Convert to WAV format
-                setIsProcessing(true)
-                try {
-                    const wavBlob = await convertToWav(webmBlob)
-                    
-                    // Send to backend
-                    const formData = new FormData()
-                    formData.append('audio', wavBlob, 'recording.wav')
-
-                    const res = await fetch('http://localhost:8000/client_audio', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    const data = await res.json()
-                    setResponse(data)
-                    console.log('Backend response:', data)
-                } catch (error) {
-                    console.error('Error processing audio:', error)
-                    setResponse({ error: String(error) })
-                } finally {
-                    setIsProcessing(false)
-                }
-            }
-
-            mediaRecorder.current.start()
-        } catch (error) {
-            console.error('Error starting recording:', error)
-            setIsRecording(false)
-        }
-    }
-
-
-    const stopRecording = () => {
-        setIsRecording(false)
-        
-        if (mediaRecorder.current) {
-            mediaRecorder.current.stop()
-        }
-        if (mediaStream.current) {
-            mediaStream.current.getTracks().forEach((track: MediaStreamTrack) => track.stop())
-        }
-    }
-
-    // ===== REALTIME MODE FUNCTIONS =====
-    
-    const startRealtimeRecording = async () => {
         setIsRecording(true)
         setRealtimeTranscript('')
         setPartialTranscript('')
@@ -126,7 +51,6 @@ export default function Recorder() {
                 
                 if (data.error) {
                     console.error('Transcription error:', data.error)
-                    setResponse({ error: data.error })
                     return
                 }
                 
@@ -170,7 +94,6 @@ export default function Recorder() {
                 },
                 onError: (error) => {
                     console.error('Audio capture error:', error)
-                    setResponse({ error: error.message })
                     setIsRecording(false)
                 }
             })
@@ -178,13 +101,12 @@ export default function Recorder() {
             await audioCapture.current.start()
             
         } catch (error) {
-            console.error('Error starting realtime recording:', error)
+            console.error('Error starting recording:', error)
             setIsRecording(false)
-            setResponse({ error: String(error) })
         }
     }
     
-    const stopRealtimeRecording = () => {
+    const stopRecording = () => {
         setIsRecording(false)
         
         // Stop audio capture
@@ -219,58 +141,20 @@ export default function Recorder() {
         }
     }, [feedbackMessages])
 
-    // Handler functions based on mode
-    const handleStartRecording = mode === 'batch' ? startRecording : startRealtimeRecording
-    const handleStopRecording = mode === 'batch' ? stopRecording : stopRealtimeRecording
-
     return (
         <div className='flex gap-4 h-full'>
             {/* Main Content */}
             <div className='flex-1'>
-                {/* Mode Toggle */}
-                <div className='mb-4 flex gap-2'>
-                <button
-                    onClick={() => setMode('batch')}
-                    disabled={isRecording}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        mode === 'batch' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    } ${isRecording ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                    Batch Mode
-                </button>
-                <button
-                    onClick={() => setMode('realtime')}
-                    disabled={isRecording}
-                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                        mode === 'realtime' 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                    } ${isRecording ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                    Realtime Mode
-                </button>
-            </div>
-
             {/* Recording Button */}
             <button
-                onClick={isRecording ? handleStopRecording : handleStartRecording}
-                disabled={isProcessing}
-                className={`px-6 py-3 rounded-lg font-semibold ${isRecording ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'} 
-                ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={isRecording ? stopRecording : startRecording}
+                className={`px-6 py-3 rounded-lg font-semibold ${isRecording ? 'bg-red-600 hover:bg-red-500' : 'bg-green-600 hover:bg-green-500'}`}
             >
-                {isRecording ? 'Stop Recording' : `Start Recording (${mode})`}
+                {isRecording ? 'Stop Recording' : 'Start Recording'}
             </button>
 
-            {isProcessing && (
-                <div className='mt-6 p-4 bg-blue-900 rounded-lg'>
-                    <p className='text-blue-200'>Processing audio and transcribing...</p>
-                </div>
-            )}
-
             {/* Realtime Transcript Display */}
-            {mode === 'realtime' && (realtimeTranscript || partialTranscript) && (
+            {(realtimeTranscript || partialTranscript) && (
                 <div className='mt-6'>
                     <h3 className='text-2xl font-bold mb-3 text-indigo-300'>Live Transcript:</h3>
                     <div className='p-6 bg-gray-800 rounded-lg'>
@@ -286,38 +170,9 @@ export default function Recorder() {
                     )}
                 </div>
             )}
-
-            {/* Batch Mode Transcript Display */}
-            {mode === 'batch' && response && response.transcript && (
-                <div className='mt-6'>
-                    <h3 className='text-2xl font-bold mb-3 text-indigo-300'>Transcript:</h3>
-                    <div className='p-6 bg-gray-800 rounded-lg'>
-                        <p className='text-lg text-gray-100 leading-relaxed'>
-                            {response.transcript}
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {response && response.error && (
-                <div className='mt-6 p-4 bg-red-900 rounded-lg'>
-                    <h3 className='font-bold mb-2 text-red-200'>Error:</h3>
-                    <p className='text-red-100'>{response.message || response.error}</p>
-                </div>
-            )}
-
-                {response && !response.error && (
-                    <div className='mt-6 p-4 bg-gray-800 rounded-lg'>
-                        <h3 className='font-bold mb-2 text-gray-400'>Debug Info:</h3>
-                        <pre className='text-xs overflow-auto text-gray-500'>
-                            {JSON.stringify(response, null, 2)}
-                        </pre>
-                    </div>
-                )}
             </div>
 
             {/* AI Feedback Sidebar */}
-            {mode === 'realtime' && (
                 <div className='w-96 flex flex-col bg-gray-900 rounded-lg border border-gray-700 h-[calc(100vh-200px)] sticky top-4'>
                     {/* Sidebar Header */}
                     <div className='p-4 border-b border-gray-700'>
@@ -373,7 +228,6 @@ export default function Recorder() {
                         </div>
                     </div>
                 </div>
-            )}
         </div>
     )
 }
