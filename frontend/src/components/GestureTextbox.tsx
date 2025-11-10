@@ -23,7 +23,7 @@ const GestureTextbox: React.FC<GestureTextboxProps> = ({ className = '' }) => {
   useEffect(() => {
     const fetchGestureData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/gesture_data');
+        const response = await fetch('http://localhost:8000/gesture_data');
         if (!response.ok) {
           throw new Error('Failed to fetch gesture data');
         }
