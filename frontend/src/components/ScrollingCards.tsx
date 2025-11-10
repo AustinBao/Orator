@@ -38,7 +38,13 @@ const StackedCards = () => {
   );
 };
 
-const Card = ({ card, index, progress, range }) => {
+interface CardType {
+  id: number;
+  title: string;
+  description: string;
+}
+
+const Card = ({ card, index: _index, progress, range }: { card: CardType; index: number; progress: any; range: number[] }) => {
   const x = useTransform(progress, range, [-200, 0]);
   const scale = useTransform(progress, range, [0.9, 1]);
   const opacity = useTransform(progress, range, [0, 1]);

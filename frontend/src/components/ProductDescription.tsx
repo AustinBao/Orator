@@ -1,7 +1,6 @@
-import React, { forwardRef } from 'react';
-import GetStartedButton from '../components/GetStartedButton'
+import { forwardRef } from 'react';
 
-const ProductDescription = forwardRef((props, ref) =>{
+const ProductDescription = forwardRef<HTMLDivElement>((_props, ref) =>{
   return (
     <div ref={ref} className="flex flex-col justify-center items-center w-full gap-8">
       {/* Temporarily commented out for hero section */}

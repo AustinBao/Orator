@@ -1,6 +1,6 @@
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 
-const AboutUs = forwardRef((props, ref) => {
+const AboutUs = forwardRef<HTMLDivElement>((_props, ref) => {
   
   const box_styling = "backdrop-blur-lg border border-white/40 p-8 rounded-3xl shadow-2xl px-12 py-10 hover:backdrop-blur-xl transition-all duration-300 hover:scale-105 flex flex-col"
   const title_styling = "text-3xl font-bold text-center mb-6 text-gray-900 h-20 flex items-center justify-center"

@@ -4,14 +4,14 @@ import ProductDescription from '../components/ProductDescription'
 import AboutUs from '../components/AboutUs'
 import HowItWorks from '../components/HowItWorks'
 import Footer from '../components/Footer'
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 
 
 function Home() {
 
-  const productDescRef = useRef(null);
-  const howItWorksRef = useRef(null);
-  const aboutUsRef = useRef(null);
+  const productDescRef = useRef<HTMLDivElement>(null);
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+  const aboutUsRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center">

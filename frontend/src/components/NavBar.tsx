@@ -1,9 +1,15 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import GetStartedButton from './GetStartedButton';
 
-export default function NavBar({ ProductDesc, AboutUs, HowItWorks }) {
-  const navBarRef = useRef(null)
-  const scrollToElement = (myRef) => {
+interface NavBarProps {
+  ProductDesc: React.RefObject<HTMLDivElement | null>;
+  AboutUs: React.RefObject<HTMLDivElement | null>;
+  HowItWorks: React.RefObject<HTMLDivElement | null>;
+}
+
+export default function NavBar({ ProductDesc: _ProductDesc, AboutUs, HowItWorks }: NavBarProps) {
+  const navBarRef = useRef<HTMLDivElement>(null)
+  const scrollToElement = (myRef: React.RefObject<HTMLDivElement | null>) => {
     let offset = 100;
     if (navBarRef.current) {
       offset = navBarRef.current.offsetHeight * 2;

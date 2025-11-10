@@ -10,7 +10,6 @@ export default function Textbox(){
   
     const [transcript, setTranscript] = useState('');
     const [showButtons, setShowButtons] = useState(false);
-    const [file, setFile] = useState<File | null>(null);
     const [highlight, setHighlight] = useState(false);
     const [highlights, setHighlights] = useState<HighlightRange[]>([]);
     const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -23,7 +22,6 @@ export default function Textbox(){
             return; // checks if no file was actually passed
         }
         console.log("PDF file", selected.name)
-        setFile(selected)
 
         pdfToText(selected).then(text => {
             // 'text' now contains the extracted text from the PDF
