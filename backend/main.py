@@ -11,6 +11,7 @@ import threading
 import time
 import cv2
 from dotenv import load_dotenv
+from ultralytics import YOLO
 from video.gesture import process_frame
 
 # Load environment variables
@@ -23,6 +24,13 @@ sock = Sock(app)
 # Initialize camera
 camera = cv2.VideoCapture(0)
 camera.set(cv2.CAP_PROP_BUFFERSIZE, 5)
+
+# Initialize YOLO model
+model = None
+try:
+    model = YOLO("yolo11n-pose.pt")
+except Exception as e:
+    print(f"Warning: Could not load YOLO model: {e}")
 
 presentation_analyzer = PresentationAnalyzer("")
 
@@ -37,15 +45,29 @@ def gen_frames():
         if not success:
             break
         
-        # Process frame with gesture analysis
-        result = None
+        # Always show detection boxes
         try:
-            result = process_frame(frame)
-            if result:
-                # Update the latest gesture data
-                latest_gesture_data = result
+            # Get the annotated frame with detection boxes first
+            results = model.predict(frame, conf=0.7, verbose=False)
+            if results and len(results) > 0:
+                frame = results[0].plot()  # This adds the detection boxes
+                
+                # Process a copy of the frame for gesture analysis
+                frame_copy = frame.copy()
+                result = process_frame(frame_copy)
+                if result:
+                    # Update the latest gesture data
+                    latest_gesture_data = result
         except Exception as e:
-            print(f"Error processing frame with gesture analysis: {e}")
+            print(f"Error in frame processing: {e}")
+            
+            # If there was an error, still try to show the frame without boxes
+            try:
+                results = model.predict(frame, conf=0.7, verbose=False)
+                if results and len(results) > 0:
+                    frame = results[0].plot()
+            except:
+                pass  # If this also fails, just continue with the original frame
         
         # Encode frame as JPEG
         ret, buffer = cv2.imencode('.jpg', frame)
