@@ -88,6 +88,6 @@ Our mission is to make high-quality communication training accessible, affordabl
 
 ## Team EEGenius
 
-Austin Bao, Jion Choi, Kibo Amran, David Xia, Raphael Ho
+Austin Bao, Jion Choi, Aqib Amran, David Xia, Raphael Ho
 
 
