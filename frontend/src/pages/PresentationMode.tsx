@@ -5,7 +5,6 @@ import Camera from '../components/Camera';
 import Recorder from '../components/Recorder';
 import type { RecorderHandle, FeedbackMessage } from '../components/Recorder';
 import SimplePDFViewer from '../components/SimplePDFViewer';
-import EEG from '../components/EEG';
 import type { EegStatusDigest } from '../components/EEG';
 
 const lightGradient = 'bg-gradient-to-br from-indigo-50 via-white to-sky-100 text-slate-900';
