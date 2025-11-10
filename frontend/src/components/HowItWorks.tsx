@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 
 const HowItWorks = forwardRef((props, ref) => {
   return (
-    <div ref={ref} className="flex flex-col justify-center items-center">
+    <div ref={ref} className="flex flex-col justify-center items-center w-full">
       <h1 className="text-5xl text-center my-10">Get Started in 3 Simple Steps</h1>
       <p className="text-lg">
 LUGGAGE SETS 3 PIECE, 3-YEARS GLOBAL VIP WARRANTY: Comfortable travel, worry-free use. These confidences come from Vipbox's excellent standards, VIP exclusive 1V1 service and 3-years global User support. If you have any questions, please feel free to let us know. Where every mile counts
