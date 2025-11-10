@@ -1,19 +1,46 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 
 // Set up the worker for PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-const SimplePDFViewer = () => {
-  const [file, setFile] = useState<File | null>(null);
+interface SimplePDFViewerProps {
+  file?: File | null;
+  onDocumentReady?: (info: { fileName: string; pageCount: number }) => void;
+  onSelectFile?: (file: File) => void;
+  className?: string;
+  showUploader?: boolean;
+}
+
+const SimplePDFViewer = ({
+  file,
+  onDocumentReady,
+  onSelectFile,
+  className = '',
+  showUploader = true
+}: SimplePDFViewerProps) => {
+  const [internalFile, setInternalFile] = useState<File | null>(null);
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const [containerWidth, setContainerWidth] = useState<number>(600);
+  const viewerRef = useRef<HTMLDivElement | null>(null);
+  const activeFile = file ?? internalFile;
+
+  useEffect(() => {
+    if (file) {
+      setPageNumber(1);
+      setNumPages(0);
+    }
+  }, [file]);
 
   const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile && selectedFile.type === 'application/pdf') {
-      setFile(selectedFile);
+      setInternalFile(selectedFile);
       setPageNumber(1);
+      setNumPages(0);
+      onSelectFile?.(selectedFile);
+      onDocumentReady?.({ fileName: selectedFile.name, pageCount: 0 });
     } else {
       alert('Please select a valid PDF file');
     }
@@ -22,6 +49,9 @@ const SimplePDFViewer = () => {
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setPageNumber(1);
+    if (activeFile) {
+      onDocumentReady?.({ fileName: activeFile.name, pageCount: numPages });
+    }
   };
 
   const goToPreviousPage = () => {
@@ -35,7 +65,7 @@ const SimplePDFViewer = () => {
   // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (file && numPages > 0) {
+      if (activeFile && numPages > 0) {
         if (event.key === 'ArrowLeft') {
           goToPreviousPage();
         } else if (event.key === 'ArrowRight') {
@@ -46,51 +76,69 @@ const SimplePDFViewer = () => {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [file, numPages, pageNumber]);
+  }, [activeFile, numPages, pageNumber]);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (viewerRef.current) {
+        setContainerWidth(viewerRef.current.clientWidth);
+      }
+    };
+
+    updateWidth();
+
+    const observer = new ResizeObserver(updateWidth);
+    if (viewerRef.current) {
+      observer.observe(viewerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div className="w-full max-w-4xl">
-      {/* Upload Button */}
-      <div className="mb-4">
-        <label
-          htmlFor="pdf-upload"
-          className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg cursor-pointer transition-colors duration-200 font-medium flex items-center justify-center gap-2"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+    <div className={`w-full max-w-4xl ${className}`}>
+      {showUploader && (
+        <div className="mb-4">
+          <label
+            htmlFor="pdf-upload"
+            className="w-full px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg cursor-pointer transition-colors duration-200 font-medium flex items-center justify-center gap-2"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              />
+            </svg>
+            {activeFile ? `Change PDF: ${activeFile.name}` : 'Upload Presentation (PDF)'}
+            <input
+              id="pdf-upload"
+              type="file"
+              accept="application/pdf"
+              onChange={onFileChange}
+              className="hidden"
             />
-          </svg>
-          {file ? `Change PDF: ${file.name}` : 'Upload Presentation (PDF)'}
-          <input
-            id="pdf-upload"
-            type="file"
-            accept="application/pdf"
-            onChange={onFileChange}
-            className="hidden"
-          />
-        </label>
-      </div>
+          </label>
+        </div>
+      )}
 
       {/* PDF Display */}
-      {file && (
-        <div className="bg-slate-800 rounded-lg p-4 shadow-lg">
+      {activeFile && (
+        <div className="bg-slate-800 rounded-lg p-4 shadow-lg h-full">
           {/* PDF Viewer */}
-          <div className="flex justify-center mb-4 bg-white rounded overflow-hidden">
+          <div ref={viewerRef} className="mb-4 bg-white rounded overflow-hidden w-full">
             <Document
-              file={file}
+              file={activeFile}
               onLoadSuccess={onDocumentLoadSuccess}
               loading={
                 <div className="text-indigo-400 text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto mb-2"></div>
+                  <div className="animate-spin rounded-full h-full w-full border-b-2 border-indigo-500 mx-auto mb-2"></div>
                   <p>Loading PDF...</p>
                 </div>
               }
@@ -102,7 +150,7 @@ const SimplePDFViewer = () => {
             >
               <Page
                 pageNumber={pageNumber}
-                width={Math.min(800, window.innerWidth - 100)}
+                width={Math.max(200, containerWidth)}
                 renderTextLayer={false}
                 renderAnnotationLayer={false}
               />
@@ -176,4 +224,3 @@ const SimplePDFViewer = () => {
 };
 
 export default SimplePDFViewer;
-

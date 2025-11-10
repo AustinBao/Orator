@@ -69,8 +69,8 @@ def detect_stress(current_ratio, baseline_ratios):
     return False
 
 def record_calm_state(board, board_id, sampling_rate):
-    print("Recording calm baseline for 10 seconds...")
-    calm_data = read_data(board, 10)                         # your existing read_data()
+    print("Recording calm baseline for 60 seconds...")
+    calm_data = read_data(board, 60)                         # your existing read_data()
     eeg_calm = filter_EEG_from_data(board, board_id, calm_data)
     calm_df = process_eeg_data(eeg_calm, sampling_rate)
 
