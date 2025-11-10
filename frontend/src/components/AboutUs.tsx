@@ -1,39 +1,38 @@
-import React, { forwardRef } from 'react';
+import React, { useRef } from 'react';
+import GetStartedButton from './GetStartedButton';
 
-const AboutUs = forwardRef((props, ref) => {
-  
-  const box_styling = "border p-4 rounded-md h-75 shadow-lg px-10"
-  const title_styling = "text-2xl font-semibold text-center"
-  const desc_styling = "text-md mt-5 text-center"
+export default function NavBar({ ProductDesc, AboutUs, HowItWorks }) {
+  const navBarRef = useRef(null)
+  const scrollToElement = (myRef) => {
+    let offset = 100;
+    if (navBarRef.current) {
+      offset = navBarRef.current.offsetHeight * 2;
+    }
+    if (myRef.current) {
+      window.scrollTo({
+        top: myRef.current.offsetTop - offset,
+        behavior: 'smooth',
+      });
+    }
+  }
+
+  const buttonClass = "min-w-30 relative px-6 py-2 rounded-full text-black bg-transparent transition duration-300 hover:text-white before:absolute before:inset-0 before:rounded-full before:p-[1px] before:bg-gradient-to-r before:from-indigo-400 before:to-purple-400 before:opacity-0 before:transition-opacity before:duration-300 hover:before:opacity-100 before:-z-10 overflow-hidden"
+
   return (
-    <div ref={ref} className="flex flex-col justify-center items-center w-full">
-
-      <h1 className="text-6xl font-medium:500 my-10 text-center w-4/10">Features</h1>
-      <div className="text-lg flex space-x-4">
-        
-          <div className={box_styling}>
-            <h2 className={title_styling}>Video Detection</h2>
-            <p className={desc_styling}>Using YOLO API, certain gestures such as covering your face, pacing around, standing too still, and tilting your head down or to the side can be 
-              detected. The system will let you know which gesture you are doing, so that you can stay confident and presentable.
-            </p>
-          </div>
-          <div className={box_styling}>
-            <h2 className={title_styling}>Audio Detection & Live AI Helper</h2>
-            <p className={desc_styling}>With Gemini API, your live speech will be transcribed to follow along with your uploaded script. When you go too far off topic or miss an important
-              idea, you will get a notification from the AI coach steering you in the right direction.
-            </p>
-          </div>
-          
-          <div className={box_styling}>
-            <h2 className={title_styling}>Slideshow Presentation & Script Upload</h2>
-            <p className={desc_styling}>When either uploading a script or simply typing it out yourself, simply click highlight and drag over text to show which points you would like emphasize. 
-              Once you send the script, as you go along the presentation we will remind you of important ideas!
-            </p>
-          </div>
-        
-      </div>
+    <div ref={navBarRef} className="
+    fixed top-4 left-1/2 -translate-x-1/2
+    flex items-center justify-center
+    bg-white/80 backdrop-blur-md
+    px-6 sm:px-10 py-2
+    rounded-full
+    gap-6 sm:gap-12
+    shadow-md
+    z-50
+  ">
+      <button className={buttonClass} onClick={() => scrollToElement(ProductDesc) }>Orator AI</button>
+      <button className={buttonClass} onClick={() => scrollToElement(HowItWorks)}>How it Works</button>
+      <button className={buttonClass} onClick={() => scrollToElement(AboutUs)}>About Us</button>
+      <GetStartedButton>Get Started</GetStartedButton>
     </div>
   );
-});
-
-export default AboutUs;
+}
