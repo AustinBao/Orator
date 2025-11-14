@@ -1,5 +1,0 @@
-backend/venv
-orator/
-
-# GCP credentials
-gcp_key.json
