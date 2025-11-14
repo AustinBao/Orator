@@ -89,13 +89,13 @@ const cards = [
   },
   {
     id: 2,
-    title: "Upload Your Script",
-    description: "Upload or type your presentation script. Highlight key points you want to emphasize during your speech.",
+    title: "Connect Your Muse Headset",
+    description: "Connect your Muse S headset for EEG monitoring and enable your camera for gesture tracking.",
   },
   {
     id: 3,
-    title: "Connect Your Devices",
-    description: "Connect your Muse S headset for EEG monitoring and enable your camera for gesture tracking.",
+    title: "Upload Your Script & Presentation",
+    description: "Upload or type your presentation script and upload your presentation powerpoint.",
   },
   {
     id: 4,
