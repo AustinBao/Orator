@@ -4,12 +4,19 @@ import json
 import os
 from typing import Callable
 
-# Initialize the Speech client once at module level
+# Initialize the Speech client once at module level (lazy initialization)
 # client = speech.SpeechClient.from_service_account_file("gcp_key.json")
 
-gcp_key = os.getenv("GCP_KEY_JSON")
-info = json.loads(gcp_key)
-client = speech.SpeechClient.from_service_account_info(info)
+def get_speech_client():
+    """Lazy initialization of Speech client"""
+    gcp_key = os.getenv("GCP_KEY_JSON")
+    if not gcp_key:
+        raise ValueError("GCP_KEY_JSON environment variable not set. Please configure it in Railway.")
+    info = json.loads(gcp_key)
+    return speech.SpeechClient.from_service_account_info(info)
+
+# Will be initialized on first use
+client = None
 
 class StreamingSpeechRecognizer:
     """
@@ -67,7 +74,8 @@ class StreamingSpeechRecognizer:
             audio = speech.RecognitionAudio(content=audio_bytes)
             
             # Perform recognition
-            response = client.recognize(config=self.config, audio=audio)
+            speech_client = get_speech_client()
+            response = speech_client.recognize(config=self.config, audio=audio)
             
             if response.results:
                 result = response.results[0]
@@ -117,7 +125,8 @@ class StreamingSpeechRecognizer:
             
             # Perform streaming recognition
             print("Calling streaming_recognize...")
-            responses = client.streaming_recognize(
+            speech_client = get_speech_client()
+            responses = speech_client.streaming_recognize(
                 config=self.streaming_config,
                 requests=requests
             )
@@ -204,7 +213,8 @@ def process_audio_chunk_simple(audio_base64: str, sample_rate: int = 16000, lang
         audio = speech.RecognitionAudio(content=audio_bytes)
         
         # Perform recognition
-        response = client.recognize(config=config, audio=audio)
+        speech_client = get_speech_client()
+        response = speech_client.recognize(config=config, audio=audio)
         
         if not response.results:
             return {
