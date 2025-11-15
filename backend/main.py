@@ -4,6 +4,7 @@ import queue
 import threading
 import time
 import cv2
+import os
 
 #flask import
 from flask import Flask, jsonify, request, Response
@@ -43,9 +44,17 @@ CORS(app,
      supports_credentials=True)
 sock = Sock(app)
 
-# Initialize camera
-camera = cv2.VideoCapture(0)  # pylint: disable=no-member
-camera.set(38, 5)  # CAP_PROP_BUFFERSIZE = 38
+# Initialize camera (only if available, skip on production servers)
+try:
+    if os.environ.get('RAILWAY_ENVIRONMENT') or os.environ.get('RENDER'):
+        # Skip camera initialization on production servers
+        camera = None
+    else:
+        camera = cv2.VideoCapture(0)  # pylint: disable=no-member
+        camera.set(38, 5)  # CAP_PROP_BUFFERSIZE = 38
+except Exception as e:
+    print(f"Warning: Camera initialization failed: {e}")
+    camera = None
 
 presentation_analyzer = PresentationAnalyzer("")
 
@@ -55,6 +64,12 @@ def home():
 
 def gen_frames():
     global latest_gesture_data
+    # Check if camera is available
+    if camera is None:
+        yield (b'--frame\r\n'
+               b'Content-Type: text/plain\r\n\r\n' + b'Camera not available on this server\r\n')
+        return
+    
     while True:
         success, frame = camera.read()
         if not success:
@@ -383,4 +398,6 @@ def stream_audio(ws):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8000, debug=True)
+    # Use PORT from environment variable for Railway/production, default to 8000 for local
+    port = int(os.environ.get("PORT", 8000))
+    app.run(host="0.0.0.0", port=port, debug=False)

@@ -2,6 +2,7 @@ flask
 flask-cors
 flask-sock
 python-dotenv
+gunicorn
 aiohttp
 websockets
 google-cloud-speech
