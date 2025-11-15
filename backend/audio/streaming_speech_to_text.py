@@ -1,10 +1,15 @@
 from google.cloud import speech_v1 as speech
 import base64
+import json
+import os
 from typing import Callable
 
 # Initialize the Speech client once at module level
-client = speech.SpeechClient.from_service_account_file("gcp_key.json")
+# client = speech.SpeechClient.from_service_account_file("gcp_key.json")
 
+gcp_key = os.getenv("GCP_KEY_JSON")
+info = json.loads(gcp_key)
+client = speech.SpeechClient.from_service_account_info(info)
 
 class StreamingSpeechRecognizer:
     """
