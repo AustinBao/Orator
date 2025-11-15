@@ -36,11 +36,18 @@ load_dotenv()
 
 app = Flask(__name__)
 # Configure CORS to allow requests from Vercel frontend
-CORS(app, origins=[
-    "https://orator-liart.vercel.app",
-    "http://localhost:5173",  # For local development
-    "http://localhost:3000"
-])
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "https://orator-liart.vercel.app",
+            "http://localhost:5173",  # For local development
+            "http://localhost:3000"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": True
+    }
+})
 sock = Sock(app)
 
 # Initialize camera
