@@ -6,6 +6,8 @@ interface GestureTextboxProps {
 
 import { useEffect, useState } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 interface GestureData {
   hipsway?: number;
   pacing?: number;
@@ -23,7 +25,7 @@ const GestureTextbox: React.FC<GestureTextboxProps> = ({ className = '' }) => {
   useEffect(() => {
     const fetchGestureData = async () => {
       try {
-        const response = await fetch('http://localhost:8000/gesture_data');
+        const response = await fetch(`${API_URL}/gesture_data`);
         if (!response.ok) {
           throw new Error('Failed to fetch gesture data');
         }

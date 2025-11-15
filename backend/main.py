@@ -35,7 +35,12 @@ from eeg.detect import (
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+# Configure CORS to allow requests from Vercel frontend
+CORS(app, origins=[
+    "https://orator-liart.vercel.app",
+    "http://localhost:5173",  # For local development
+    "http://localhost:3000"
+])
 sock = Sock(app)
 
 # Initialize camera

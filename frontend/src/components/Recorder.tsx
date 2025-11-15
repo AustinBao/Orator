@@ -1,6 +1,9 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { RealtimeAudioCapture } from '../utils/realtimeAudioCapture';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const WS_URL = API_URL.replace('https://', 'wss://').replace('http://', 'ws://');
+
 export interface FeedbackMessage {
   id: number;
   feedback: string;
@@ -71,7 +74,7 @@ const Recorder = forwardRef<RecorderHandle, RecorderProps>(function Recorder(
     setFeedbackMessages([]);
 
     try {
-      websocket.current = new WebSocket('ws://localhost:8000/stream_audio');
+      websocket.current = new WebSocket(`${WS_URL}/stream_audio`);
 
       websocket.current.onopen = () => {
         console.log('WebSocket connected');
