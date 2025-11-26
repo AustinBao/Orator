@@ -66,9 +66,9 @@ export default function Dashboard() {
 
   const navigate = useNavigate();
 
-  const themeClasses = 'bg-gradient-to-br from-rose-950 via-slate-900 to-orange-950 text-slate-100';
-  const cardBase = 'bg-white/5 border border-white/10';
-  const subtle = 'text-slate-300';
+  const themeClasses = 'bg-gradient-to-br from-custom-pink via-white to-custom-orange text-slate-900';
+  const cardBase = 'bg-white/90 border border-gray-300 shadow-lg';
+  const subtle = 'text-gray-600';
   const accentButton =
     'px-4 py-2 rounded-lg font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
 
@@ -273,13 +273,13 @@ export default function Dashboard() {
       <section className={`${cardBase} rounded-3xl p-6 space-y-6`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-orange-400">Step 1</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-orange-600 font-semibold">Step 1</p>
             <h2 className="text-2xl font-semibold mt-1">Muse S Status</h2>
             <p className={`${subtle} text-sm`}>Connect your headband and review live signals.</p>
           </div>
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
-              museConnected ? 'bg-emerald-400/20 text-emerald-300' : 'bg-amber-400/20 text-amber-300'
+              museConnected ? 'bg-emerald-100 text-emerald-700 border border-emerald-300' : 'bg-amber-100 text-amber-700 border border-amber-300'
             }`}
           >
             {museConnected ? 'Connected' : 'Not connected'}
@@ -299,17 +299,17 @@ export default function Dashboard() {
         
           <button
             onClick={handleSkipMuse}
-            className={`${accentButton} bg-white/10 text-white hover:bg-white/20`}
+            className={`${accentButton} bg-gray-700 text-white hover:bg-gray-600`}
           >
             Skip device setup
           </button>
         </div>
 
-        <div className="rounded-2xl p-4 bg-gradient-to-r from-rose-500/10 via-pink-500/10 to-orange-500/10 border border-white/10">
-          <p className="text-xs uppercase tracking-[0.3em] text-orange-300 mb-2">Live activity</p>
-          <div className="relative h-20 rounded-xl overflow-hidden bg-slate-900/40">
+        <div className="rounded-2xl p-4 bg-gradient-to-r from-rose-500/20 via-pink-500/20 to-orange-500/20 border border-orange-300">
+          <p className="text-xs uppercase tracking-[0.3em] text-orange-600 mb-2">Live activity</p>
+          <div className="relative h-20 rounded-xl overflow-hidden bg-gradient-to-r from-purple-200 via-pink-200 to-orange-200">
             <div className="absolute inset-0 bg-gradient-to-r from-rose-400/60 via-pink-400/50 to-orange-500/60 blur-2xl opacity-60 animate-pulse" />
-            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-[pulse_2.5s_ease-in-out_infinite]" />
+            <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[pulse_2.5s_ease-in-out_infinite]" />
           </div>
         </div>
 
@@ -317,7 +317,7 @@ export default function Dashboard() {
           <h3 className="font-semibold mb-3">Channel signal quality</h3>
           <div className="space-y-3">
             {Object.keys(channelQuality).length === 0 ? (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-gray-600">
                 Connect the Muse device to view live channel metrics.
               </p>
             ) : (
@@ -325,11 +325,11 @@ export default function Dashboard() {
                 <div key={label}>
                   <div className="flex items-center justify-between text-sm mb-1">
                     <span>{label}</span>
-                    <span className={strength > 70 ? 'text-emerald-400' : 'text-amber-300'}>
+                    <span className={strength > 70 ? 'text-emerald-600' : 'text-amber-600'}>
                       {strength}%
                     </span>
                   </div>
-                  <div className="h-2 rounded-full bg-slate-700/40">
+                  <div className="h-2 rounded-full bg-gray-300">
                     <div
                       className="h-full rounded-full bg-gradient-to-r from-rose-400 via-pink-500 to-orange-500"
                       style={{ width: `${strength}%` }}
@@ -339,10 +339,10 @@ export default function Dashboard() {
               ))
             )}
             {connectionMessage && (
-              <p className="text-xs text-orange-200">{connectionMessage}</p>
+              <p className="text-xs text-orange-700 font-medium">{connectionMessage}</p>
             )}
             {lastUpdated && (
-              <p className="text-xs text-slate-400">Last updated at {lastUpdated}</p>
+              <p className="text-xs text-gray-600">Last updated at {lastUpdated}</p>
             )}
           </div>
         </div>
@@ -355,9 +355,9 @@ export default function Dashboard() {
               <h3 className="text-xl font-semibold">Baseline Recorder</h3>
               <p className={`${subtle} text-sm`}>60-second calm capture for trustworthy ratios.</p>
             </div>
-            <span className="text-sm text-orange-300">{Math.round(baselineProgress)}%</span>
+            <span className="text-sm text-orange-600 font-semibold">{Math.round(baselineProgress)}%</span>
           </div>
-          <div className="h-3 rounded-full bg-slate-800/30 overflow-hidden">
+          <div className="h-3 rounded-full bg-gray-300 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-rose-400 via-pink-500 to-orange-500 transition-all duration-500"
               style={{ width: `${baselineProgress}%` }}
@@ -375,7 +375,7 @@ export default function Dashboard() {
         <div className={`${cardBase} rounded-3xl p-6 space-y-3`}>
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold">Current Ratios</h3>
-            <span className="text-xs uppercase tracking-[0.3em] text-orange-300">Live</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">Live</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {(baselineRatios
@@ -388,22 +388,22 @@ export default function Dashboard() {
             ).map(ratio => (
               <div
                 key={ratio.label}
-                className="rounded-2xl p-4 bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-white/10"
+                className="rounded-2xl p-4 bg-gradient-to-br from-rose-500/20 to-orange-500/20 border border-orange-300"
               >
-                <p className="text-xs uppercase tracking-wide text-orange-200">{ratio.label}</p>
+                <p className="text-xs uppercase tracking-wide text-orange-700 font-semibold">{ratio.label}</p>
                 <p className="text-3xl font-semibold mt-1">
                   {typeof ratio.value === 'number' ? ratio.value.toFixed(2) : ratio.value}
                 </p>
-                {'tone' in ratio && <p className="text-xs mt-1 text-orange-200">{ratio.tone}</p>}
+                {'tone' in ratio && <p className="text-xs mt-1 text-orange-700">{ratio.tone}</p>}
               </div>
             ))}
           </div>
           <div className="grid grid-cols-3 gap-3">
             {Object.entries(bandPower).map(([band, value], idx) => (
-              <div key={band} className="rounded-2xl p-3 bg-slate-900/40 border border-white/10">
-                <p className="text-xs uppercase tracking-wide text-orange-200">{band}</p>
+              <div key={band} className="rounded-2xl p-3 bg-gray-200 border border-gray-400">
+                <p className="text-xs uppercase tracking-wide text-orange-700 font-semibold">{band}</p>
                 <p className="text-lg font-semibold mt-1">{value.toFixed(1)} μV</p>
-                <div className="mt-2 h-2 rounded-full bg-slate-800/60 overflow-hidden">
+                <div className="mt-2 h-2 rounded-full bg-gray-300 overflow-hidden">
                   <div
                     className={`h-full bg-gradient-to-r ${gradientForBand(idx)} transition-all`}
                     style={{ width: `${(value / 45) * 100}%` }}
@@ -422,12 +422,12 @@ export default function Dashboard() {
       <section className={`${cardBase} rounded-3xl p-6 space-y-4`}>
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.2em] text-orange-400">Step 2</p>
+            <p className="text-sm uppercase tracking-[0.2em] text-orange-600 font-semibold">Step 2</p>
             <h2 className="text-2xl font-semibold mt-1">Presentation Uploader</h2>
             <p className={`${subtle} text-sm`}>Load your PDF slides for rehearsal.</p>
           </div>
           {pdfMeta && (
-            <div className="text-xs text-orange-200">
+            <div className="text-xs text-orange-700 font-medium">
               Loaded <span className="font-semibold">{pdfMeta}</span>
             </div>
           )}
@@ -448,45 +448,29 @@ export default function Dashboard() {
       <section className={`${cardBase} rounded-3xl p-6 space-y-4`}>
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Script Uploader</h2>
-          <span className="text-sm text-orange-300">Word count: {wordCount}</span>
+          <span className="text-sm text-orange-600 font-semibold">Word count: {wordCount}</span>
         </div>
-        <div className="rounded-3xl border border-dashed border-orange-300 bg-gradient-to-br from-rose-500/10 to-orange-500/10 p-4">
+        <div className="rounded-3xl border border-dashed border-orange-400 bg-gradient-to-br from-rose-500/15 to-orange-500/15 p-4">
           <textarea
             value={scriptText}
             onChange={(e) => setScriptText(e.target.value)}
-            className="w-full h-64 rounded-2xl p-4 resize-none bg-slate-950/60 text-white border border-white/10"
+            className="w-full h-64 rounded-2xl p-4 resize-none bg-white border border-gray-300 text-gray-900 placeholder:text-gray-500"
             placeholder="Paste or type your script here. Highlight key points just like in Textbox."
           />
-          <div className="flex flex-col gap-2 mt-3">
-            <div className="flex justify-end gap-3">
-              <button className={`${accentButton} bg-white/10 text-white hover:bg-white/20`}>
-                Preview
-              </button>
-              <button
-                onClick={handleSaveScript}
-                disabled={scriptSaveStatus === 'saving'}
-                className={`${accentButton} text-white ${
-                  scriptSaveStatus === 'saving'
-                    ? 'bg-orange-800 cursor-wait'
-                    : 'bg-orange-500 hover:bg-orange-400'
-                }`}
-              >
-                {scriptSaveStatus === 'saving' ? 'Saving…' : 'Save script'}
-              </button>
-            </div>
+          <div className="flex items-center justify-between mt-3">
             {scriptSaveMessage && (
-              <p
-                className={`text-xs ${
-                  scriptSaveStatus === 'success'
-                    ? 'text-emerald-300'
-                    : scriptSaveStatus === 'error'
-                      ? 'text-rose-300'
-                      : 'text-orange-200'
-                }`}
-              >
+              <p className={`text-sm font-medium ${scriptSaveStatus === 'success'? 'text-emerald-700' : scriptSaveStatus === 'error' ? 'text-rose-700' : 'text-orange-700'}`}>
                 {scriptSaveMessage}
               </p>
             )}
+            <div className="flex gap-3 ml-auto">
+              <button
+                onClick={handleSaveScript}
+                disabled={scriptSaveStatus === 'saving'}
+                className={`${accentButton} text-white ${scriptSaveStatus === 'saving' ? 'bg-orange-800 cursor-wait' : 'bg-orange-500 hover:bg-orange-400'}`}>
+                {scriptSaveStatus === 'saving' ? 'Saving…' : 'Save script'}
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -499,12 +483,12 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-orange-400">Setup / Dashboard</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-orange-600 font-semibold">Setup / Dashboard</p>
             <h1 className="text-4xl font-bold mt-2">EEG Presentation Coach</h1>
             <p className={`${subtle} text-sm mt-1`}>Follow the guided steps before you start presenting.</p>
           </div>
           <div className="flex flex-wrap gap-3 items-center">
-            <Link to="/" className="text-sm font-semibold text-orange-400 hover:text-orange-300">
+            <Link to="/" className="text-sm font-semibold text-orange-600 hover:text-orange-700">
               Back to landing
             </Link>
           </div>
@@ -518,11 +502,11 @@ export default function Dashboard() {
                   key={step.id}
                   className={`flex-1 min-w-[180px] rounded-2xl p-4 border ${
                     currentStep === index
-                      ? 'bg-gradient-to-r from-rose-500/20 to-orange-500/20 border-orange-300'
-                      : 'border-white/10'
+                      ? 'bg-gradient-to-r from-rose-500/25 to-orange-500/25 border-orange-400 shadow-md'
+                      : 'border-gray-300 bg-white/50'
                   }`}
                 >
-                  <p className="text-xs uppercase tracking-[0.3em] text-orange-300">Step {index + 1}</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">Step {index + 1}</p>
                   <p className="text-lg font-semibold mt-1">{step.title}</p>
                 </div>
               ))}
@@ -531,7 +515,7 @@ export default function Dashboard() {
               <button
                 onClick={goPrevious}
                 disabled={currentStep === 0}
-                className={`${accentButton} ${currentStep === 0 ? 'bg-slate-500/30 text-slate-300 cursor-not-allowed' : 'bg-white/10 text-white hover:bg-white/20'}`}
+                className={`${accentButton} ${currentStep === 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-700 text-white hover:bg-gray-600'}`}
               >
                 ← Previous
               </button>
@@ -540,7 +524,7 @@ export default function Dashboard() {
                 disabled={currentStep === steps.length - 1}
                 className={`${accentButton} ${
                   currentStep === steps.length - 1
-                    ? 'bg-slate-500/30 text-slate-300 cursor-not-allowed'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-orange-500 text-white hover:bg-orange-400'
                 }`}
               >
@@ -560,7 +544,7 @@ export default function Dashboard() {
             onClick={startPresentation}
             disabled={!canStartPresentation}
             className={`${accentButton} text-white ${
-              canStartPresentation ? 'bg-emerald-500 hover:bg-emerald-400' : 'bg-emerald-500/30 cursor-not-allowed'
+              canStartPresentation ? 'bg-emerald-500 hover:bg-emerald-400' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
           >
             Start presenting

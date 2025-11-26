@@ -52,8 +52,13 @@ try:
     else:
         camera = cv2.VideoCapture(0)  # pylint: disable=no-member
         camera.set(38, 5)  # CAP_PROP_BUFFERSIZE = 38
+        if camera.isOpened():
+            print("✓ Camera initialized successfully")
+        else:
+            print("✗ Camera opened but not working")
+            camera = None
 except Exception as e:
-    print(f"Warning: Camera initialization failed: {e}")
+    print(f"✗ Warning: Camera initialization failed: {e}")
     camera = None
 
 presentation_analyzer = PresentationAnalyzer("")
@@ -108,6 +113,7 @@ def get_gesture_data():
 
 @app.route('/video_feed')
 def video_feed():
+    print(f"Video feed requested. Camera status: {'Available' if camera is not None else 'Not Available'}")
     def generate():
         global latest_gesture_data
         for frame_with_gestures in gen_frames():

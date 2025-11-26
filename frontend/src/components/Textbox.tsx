@@ -151,7 +151,8 @@ export default function Textbox(){
         console.log("Transcript to save:", finalTranscript);
         
         try {
-            const response = await fetch("http://127.0.0.1:8000/transcript", {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+            const response = await fetch(`${API_URL}/transcript`, {
             method: "POST",
             headers: {
             "Content-Type": "application/json",

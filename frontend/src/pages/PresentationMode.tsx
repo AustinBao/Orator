@@ -184,37 +184,37 @@ export default function PresentationMode() {
     : 0;
 
   return (
-    <div className="bg-gradient-to-br from-rose-950 via-slate-900 to-orange-950 text-slate-100 min-h-screen">
+    <div className="bg-gradient-to-br from-custom-pink via-white to-custom-orange text-slate-900 min-h-screen">
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-[0.3em] text-orange-400">Presentation Mode</p>
+            <p className="text-sm uppercase tracking-[0.3em] text-orange-600 font-semibold">Presentation Mode</p>
             <h1 className="text-4xl font-bold mt-2">Live Monitoring & Coaching</h1>
-            <p className="text-sm text-orange-300 mt-1">Keep an eye on EEG, slides, and speech feedback in one view.</p>
+            <p className="text-sm text-gray-700 mt-1">Keep an eye on EEG, slides, and speech feedback in one view.</p>
           </div>
           <div className="flex flex-wrap gap-3 items-center">
             <Link
               to="/dashboard"
-              className={`${accentButton} bg-white/10 text-white hover:bg-white/20`}
+              className={`${accentButton} bg-gray-700 text-white hover:bg-gray-600`}
             >
               ← Back to Dashboard
             </Link>
           </div>
         </header>
 
-        <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 rounded-3xl border border-gray-300 bg-white/90 shadow-lg p-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <span
-                className={`h-3 w-3 rounded-full ${isMuseReady ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400 animate-pulse'}`}
+                className={`h-3 w-3 rounded-full ${isMuseReady ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500 animate-pulse'}`}
               />
-              <p className={`text-sm font-semibold ${isMuseReady ? 'text-emerald-400' : 'text-rose-400'}`}>
+              <p className={`text-sm font-semibold ${isMuseReady ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {isMuseReady ? 'Muse device connected' : 'Muse device not connected'}
               </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-xs uppercase tracking-[0.4em] text-orange-300">Auto-saving session data</p>
+            <p className="text-xs uppercase tracking-[0.4em] text-orange-600 font-semibold">Auto-saving session data</p>
             <button
               onClick={handleTogglePresentation}
               disabled={isStartingPresentation && !isPresenting}
@@ -228,7 +228,7 @@ export default function PresentationMode() {
           </div>
         </div>
 
-        <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-wrap items-center gap-3">
+        <div className="rounded-3xl border border-gray-300 bg-white/90 shadow-lg p-4 flex flex-wrap items-center gap-3">
           <input
             id="live-pdf-upload"
             type="file"
@@ -245,12 +245,12 @@ export default function PresentationMode() {
         </div>
 
         <div className="flex flex-wrap gap-4 items-stretch">
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-col flex-1 min-w-[280px] relative overflow-visible">
+          <div className="rounded-3xl border border-gray-300 bg-white/90 shadow-lg p-4 flex flex-col flex-1 min-w-[280px] relative overflow-visible">
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-xl font-semibold">Live Camera</h2>
-              <span className="text-xs uppercase tracking-[0.3em] text-orange-300">Gesture view</span>
+              <span className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">Gesture view</span>
             </div>
-            <div className="rounded-2xl overflow-hidden border border-white/10 flex-1">
+            <div className="rounded-2xl overflow-hidden border border-gray-300 flex-1">
               <Camera />
             </div>
             <div className="pointer-events-none absolute inset-x-0 bottom-4 flex justify-center">
@@ -269,15 +269,17 @@ export default function PresentationMode() {
            
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-4 flex flex-col w-fit max-w-full">
-            <div className="flex flex-wrap items-center gap-3 mb-3">
-              <h2 className="text-xl font-semibold">Presentation Viewer</h2>
-              <span className="text-xs uppercase tracking-[0.3em] text-orange-300">PDF</span>
-              {presentationSummary && (
-                <p className="text-sm text-orange-200 truncate">{presentationSummary}</p>
-              )}
+          <div className="rounded-3xl border border-gray-300 bg-white/90 shadow-lg p-4 flex flex-col w-fit max-w-full">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-semibold">Presentation Viewer</h2>
+                {presentationSummary && (
+                  <p className="text-sm text-orange-700 font-medium truncate">{presentationSummary}</p>
+                )}
+              </div>
+              <span className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">Power Point</span>
             </div>
-            <div className="rounded-2xl bg-slate-900/30 p-3 flex-1 overflow-auto">
+            <div className="rounded-2xl bg-gray-100 border border-gray-300 p-3 flex-1 overflow-auto">
               <SimplePDFViewer
                 className=" w-full h-full"
                 file={presentationFile}
@@ -288,23 +290,23 @@ export default function PresentationMode() {
           </div>
         </div>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+        <section className="rounded-3xl border border-gray-300 bg-white/90 shadow-lg p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">AI Live Coach</h2>
-            <span className="text-xs uppercase tracking-[0.3em] text-orange-300">Feedback stream</span>
+            <span className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">Feedback stream</span>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2 rounded-2xl border border-white/10 bg-slate-900/30 flex flex-col">
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
-                <p className="text-sm text-orange-200">Latest feedback</p>
-                <span className="text-xs text-orange-300">Live</span>
+            <div className="lg:col-span-2 rounded-2xl border border-gray-300 bg-gray-50 flex flex-col">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-300">
+                <p className="text-sm text-orange-700 font-medium">Latest feedback</p>
+                <span className="text-xs text-orange-600 font-semibold">Live</span>
               </div>
               <div
                 ref={feedbackScrollRef}
-                className="flex-1 max-h-64 overflow-y-auto p-4 space-y-3 text-sm text-slate-200"
+                className="flex-1 max-h-64 overflow-y-auto p-4 space-y-3 text-sm text-gray-800"
               >
                 {feedbackMessages.length === 0 ? (
-                  <div className="text-center text-gray-500">
+                  <div className="text-center text-gray-600">
                     <p className="text-xl mb-2">🎧</p>
                     <p>Start presenting to receive AI feedback.</p>
                   </div>
@@ -314,14 +316,14 @@ export default function PresentationMode() {
                       key={msg.id}
                       className={`p-3 rounded-2xl border ${
                         msg.stuttering_detected
-                          ? 'bg-yellow-900/20 border-yellow-600/40'
-                          : 'bg-white/5 border-white/10'
+                          ? 'bg-yellow-100 border-yellow-400'
+                          : 'bg-white border-gray-300'
                       }`}
                     >
                       <p className="whitespace-pre-line">{msg.feedback}</p>
-                      <div className="flex items-center justify-between mt-2 text-xs text-orange-200">
+                      <div className="flex items-center justify-between mt-2 text-xs text-gray-600">
                         {msg.stuttering_detected && (
-                          <span className="flex items-center gap-1 text-yellow-300">
+                          <span className="flex items-center gap-1 text-yellow-700 font-semibold">
                             <span>⚠️</span> Stuttering detected
                           </span>
                         )}
@@ -333,53 +335,53 @@ export default function PresentationMode() {
               </div>
             </div>
             {isMuseReady ? (
-              <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 space-y-3 text-sm text-slate-200">
-                <p className="text-xs uppercase tracking-[0.3em] text-orange-300">EEG live activity</p>
+              <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 space-y-3 text-sm text-gray-800">
+                <p className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">EEG live activity</p>
                 {eegDigest ? (
-                  <div className="rounded-2xl border border-orange-400/40 bg-gradient-to-r from-rose-500/10 to-orange-500/10 p-4 space-y-3">
+                  <div className="rounded-2xl border border-orange-400 bg-gradient-to-r from-rose-500/15 to-orange-500/15 p-4 space-y-3">
                     <div className="flex items-center gap-3">
                       <span
                         className={`h-3 w-3 rounded-full ${
-                          eegDigest.stressed ? 'bg-rose-400 animate-pulse' : 'bg-emerald-300'
+                          eegDigest.stressed ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
                         }`}
                       />
                       <div>
                         <p className="font-semibold">
                           {eegDigest.stressed ? 'Stress detected' : 'Calm & focused'}
                         </p>
-                        <p className="text-xs text-orange-200">
+                        <p className="text-xs text-gray-600">
                           {new Date(eegDigest.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
                     </div>
-                    <p className="text-sm text-orange-100">{eegDigest.message}</p>
+                    <p className="text-sm text-gray-800">{eegDigest.message}</p>
                     {eegDigest.stressed ? (
-                      <ul className="text-xs text-rose-100 space-y-1 list-disc list-inside">
+                      <ul className="text-xs text-rose-700 space-y-1 list-disc list-inside">
                         <li>Pause for a deep breath.</li>
                         <li>Relax shoulders and slow your delivery.</li>
                       </ul>
                     ) : (
-                      <p className="text-xs text-emerald-200">Steady signals detected—keep it up!</p>
+                      <p className="text-xs text-emerald-700 font-medium">Steady signals detected—keep it up!</p>
                     )}
                   </div>
                 ) : (
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-gray-600">
                     Waiting for live EEG readings…
                   </p>
                 )}
               </div>
             ) : (
-              <div className="rounded-2xl border border-white/10 bg-slate-900/40 p-4 space-y-3 text-sm text-slate-200">
-                <p className="text-xs uppercase tracking-[0.3em] text-orange-300">Session status</p>
+              <div className="rounded-2xl border border-gray-300 bg-gray-50 p-4 space-y-3 text-sm text-gray-800">
+                <p className="text-xs uppercase tracking-[0.3em] text-orange-600 font-semibold">Session status</p>
                 <p>
                   • Recording:{' '}
-                  <span className={isPresenting ? 'text-emerald-300' : 'text-slate-400'}>
+                  <span className={isPresenting ? 'text-emerald-700 font-semibold' : 'text-gray-600'}>
                     {isPresenting ? 'Active' : 'Idle'}
                   </span>
                 </p>
                 <p>• Feedback count: {feedbackMessages.length}</p>
                 <p>• Transcript words: {transcriptWordCount}</p>
-                <p className="text-rose-300 text-xs">
+                <p className="text-rose-700 text-xs font-medium">
                   Connect the Muse headset to start emotion detection.
                 </p>
               </div>
@@ -387,21 +389,21 @@ export default function PresentationMode() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+        <section className="rounded-3xl border border-gray-300 bg-white/90 shadow-lg p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold">Live Transcript</h2>
-            {isPresenting && <span className="text-xs text-emerald-300">Recording…</span>}
+            {isPresenting && <span className="text-xs text-emerald-700 font-semibold">Recording…</span>}
           </div>
-          <div className="max-h-64 overflow-y-auto bg-slate-900/30 rounded-2xl border border-white/10 p-4 text-slate-100">
+          <div className="max-h-64 overflow-y-auto bg-gray-50 rounded-2xl border border-gray-300 p-4 text-gray-900">
             {transcriptData.realtime || transcriptData.partial ? (
               <>
                 <p className="leading-relaxed whitespace-pre-wrap">{transcriptData.realtime}</p>
                 {transcriptData.partial && (
-                  <p className="mt-3 text-orange-200 italic">{transcriptData.partial}</p>
+                  <p className="mt-3 text-orange-700 italic">{transcriptData.partial}</p>
                 )}
               </>
             ) : (
-              <p className="text-orange-200 text-sm">Start presenting to populate the live transcript.</p>
+              <p className="text-gray-600 text-sm">Start presenting to populate the live transcript.</p>
             )}
           </div>
         </section>
