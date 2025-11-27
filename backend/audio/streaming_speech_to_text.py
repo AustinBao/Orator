@@ -1,7 +1,7 @@
 from google.cloud import speech_v1 as speech
-import base64
 import json
 import os
+import traceback
 from typing import Callable
 
 # Initialize the Speech client once at module level (lazy initialization)
@@ -9,11 +9,17 @@ from typing import Callable
 
 def get_speech_client():
     """Lazy initialization of Speech client"""
+    # Try environment variable first (for Railway/production)
     gcp_key = os.getenv("GCP_KEY_JSON")
-    if not gcp_key:
-        raise ValueError("GCP_KEY_JSON environment variable not set. Please configure it in Railway.")
-    info = json.loads(gcp_key)
-    return speech.SpeechClient.from_service_account_info(info)
+    if gcp_key:
+        info = json.loads(gcp_key)
+        return speech.SpeechClient.from_service_account_info(info)
+    
+    # Fall back to local file (for local development)
+    if os.path.exists("gcp_key.json"):
+        return speech.SpeechClient.from_service_account_file("gcp_key.json")
+    
+    raise ValueError("GCP credentials not found. Set GCP_KEY_JSON environment variable or provide gcp_key.json file.")
 
 # Will be initialized on first use
 client = None
@@ -22,13 +28,7 @@ class StreamingSpeechRecognizer:
     """
     Handles streaming speech recognition using Google Cloud Speech-to-Text API
     """
-    
-    def __init__(
-        self, 
-        callback: Callable[[dict], None],
-        sample_rate: int = 16000,
-        language_code: str = "en-US"
-    ):
+    def __init__(self, callback: Callable[[dict], None], sample_rate: int = 16000, language_code: str = "en-US"):
         """
         Initialize streaming recognizer
         
@@ -60,40 +60,6 @@ class StreamingSpeechRecognizer:
         )
         
         print(f"StreamingSpeechRecognizer initialized: {sample_rate}Hz, {language_code}")
-    
-    def process_audio_chunk(self, audio_base64: str) -> None:
-        """
-        Process a single audio chunk (not used in streaming mode)
-        This is for immediate processing without maintaining a stream.
-        """
-        try:
-            # Decode base64 audio
-            audio_bytes = base64.b64decode(audio_base64)
-            
-            # Create audio object
-            audio = speech.RecognitionAudio(content=audio_bytes)
-            
-            # Perform recognition
-            speech_client = get_speech_client()
-            response = speech_client.recognize(config=self.config, audio=audio)
-            
-            if response.results:
-                result = response.results[0]
-                if result.alternatives:
-                    transcript = result.alternatives[0].transcript
-                    confidence = result.alternatives[0].confidence
-                    
-                    self.callback({
-                        "transcript": transcript,
-                        "confidence": confidence,
-                        "is_final": True
-                    })
-                    
-        except Exception as e:
-            self.callback({
-                "error": str(e),
-                "is_final": False
-            })
     
     def generate_requests(self, audio_generator):
         """
@@ -169,7 +135,6 @@ class StreamingSpeechRecognizer:
                     
         except Exception as e:
             print(f"Exception in streaming: {str(e)}")
-            import traceback
             traceback.print_exc()
             self.callback({
                 "error": str(e),
@@ -182,62 +147,3 @@ class StreamingSpeechRecognizer:
     def stop(self) -> None:
         """Stop streaming recognition"""
         self.is_streaming = False
-
-
-def process_audio_chunk_simple(audio_base64: str, sample_rate: int = 16000, language_code: str = "en-US") -> dict:
-    """
-    Simple function to process a single audio chunk without maintaining state.
-    Good for testing or simple use cases.
-    
-    Args:
-        audio_base64: Base64-encoded audio data
-        sample_rate: Sample rate in Hz
-        language_code: Language code
-    
-    Returns:
-        dict with transcript and metadata
-    """
-    try:
-        # Decode base64 audio
-        audio_bytes = base64.b64decode(audio_base64)
-        
-        # Configure recognition
-        config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-            sample_rate_hertz=sample_rate,
-            language_code=language_code,
-            enable_automatic_punctuation=True,
-        )
-        
-        # Create audio object
-        audio = speech.RecognitionAudio(content=audio_bytes)
-        
-        # Perform recognition
-        speech_client = get_speech_client()
-        response = speech_client.recognize(config=config, audio=audio)
-        
-        if not response.results:
-            return {
-                "success": True,
-                "transcript": "",
-                "is_final": True,
-                "message": "No speech detected"
-            }
-        
-        result = response.results[0]
-        alternative = result.alternatives[0]
-        
-        return {
-            "success": True,
-            "transcript": alternative.transcript,
-            "confidence": alternative.confidence,
-            "is_final": True
-        }
-        
-    except Exception as e:
-        return {
-            "success": False,
-            "error": str(e),
-            "is_final": False
-        }
-

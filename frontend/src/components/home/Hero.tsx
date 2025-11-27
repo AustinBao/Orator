@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import GetStartedButton from './GetStartedButton';
+import GetStartedButton from '../GetStartedButton.tsx';
 
 export default function Hero() {
   return (

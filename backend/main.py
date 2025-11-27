@@ -263,13 +263,13 @@ def stream_audio(ws):
     Includes AI-powered presentation analysis every 3 seconds
     """
     print("WebSocket connection established")
-    
+
     # Queue to hold audio chunks
     audio_queue = queue.Queue()
-    
+
     # Flag to control streaming
     is_streaming = {'active': True}
-    
+
     # Transcript accumulation and analysis timing
     full_transcript = []
     last_analysis_time = time.time()
@@ -307,7 +307,7 @@ def stream_audio(ws):
                                 'stuttering_details': analysis_result.get('stuttering_details'),
                                 'timestamp': current_time
                             }
-                            ws.send(json.dumps(feedback_message))
+                            ws.send(json.dumps(feedback_message)) # sends the feedback message to the frontend as a JSON string with ai_feedback type
                             print(f"AI Feedback sent: {analysis_result['feedback'][:100]}...")
                         else:
                             print(f"AI analysis failed: {analysis_result.get('error')}")

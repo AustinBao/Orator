@@ -1,9 +1,5 @@
 from brainflow.board_shim import BoardShim, BrainFlowInputParams, BoardIds
-from brainflow.data_filter import DataFilter, FilterTypes, WindowOperations
 import numpy as np
-import time
-import pandas as pd
-from scipy.signal import butter, lfilter
 from .DataPreprocess import read_data, filter_EEG_from_data, process_eeg_data
 from .FeatureExtraction import extract_features, average_features
 

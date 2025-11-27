@@ -78,11 +78,7 @@ class PresentationAnalyzer:
                 
         return repetitions
     
-    def analyze_presentation(
-        self, 
-        live_transcript: str,
-        context_window: Optional[str] = None
-    ) -> Dict:
+    def analyze_presentation(self, live_transcript: str, context_window: Optional[str] = None) -> Dict:
         """
         Analyze the presenter's performance against the script
         
@@ -279,43 +275,3 @@ You are a SUPPORTIVE coach, not a harsh critic. Only speak up for SIGNIFICANT is
 - PROACTIVELY warn about upcoming HIGHLIGHTED TOPICS so they can prepare
             """
         return prompt
-    
-    def get_summary_feedback(self) -> Dict:
-        """
-        Get a summary of all feedback given during the presentation
-        
-        Returns:
-            Summary analysis
-        """
-        if not self.previous_feedback:
-            return {
-                "success": False,
-                "message": "No feedback generated yet"
-            }
-        
-        # Count feedback types
-        stuttering_count = sum(1 for f in self.previous_feedback if f.get("stuttering_detected"))
-        
-        return {
-            "success": True,
-            "total_checks": len(self.previous_feedback),
-            "stuttering_incidents": stuttering_count,
-            "feedback_history": self.previous_feedback
-        }
-
-
-def analyze_presentation_segment(script: str, live_transcript: str, previous_context: Optional[str] = None) -> Dict:
-    """
-    One-off function to analyze a presentation segment
-    
-    Args:
-        script: The presentation script with HIGHLIGHTED topics
-        live_transcript: Current transcript segment
-        previous_context: Previous transcript for context
-        
-    Returns:
-        Analysis results
-    """
-    analyzer = PresentationAnalyzer(script)
-    return analyzer.analyze_presentation(live_transcript, previous_context)
-

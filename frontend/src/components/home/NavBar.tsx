@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import GetStartedButton from './GetStartedButton';
+import GetStartedButton from '../GetStartedButton.tsx';
 
 interface NavBarProps {
   ProductDesc: React.RefObject<HTMLDivElement | null>;

@@ -31,24 +31,13 @@ interface RecorderProps {
   className?: string;
 }
 
-const Recorder = forwardRef<RecorderHandle, RecorderProps>(function Recorder(
-  {
-    showControls = true,
-    showTranscript = true,
-    showFeedbackPanel = true,
-    onRecordingStateChange,
-    onTranscriptUpdate,
-    onFeedbackUpdate,
-    className = ''
-  },
-  ref
-) {
+const Recorder = forwardRef<RecorderHandle, RecorderProps>(function Recorder({showControls = true, showTranscript = true, showFeedbackPanel = true, onRecordingStateChange, onTranscriptUpdate, onFeedbackUpdate, className = ''}, ref) {
   const [isRecording, setIsRecording] = useState(false);
   const [realtimeTranscript, setRealtimeTranscript] = useState('');
   const [partialTranscript, setPartialTranscript] = useState('');
   const [feedbackMessages, setFeedbackMessages] = useState<FeedbackMessage[]>([]);
+ 
   const realtimeTranscriptRef = useRef('');
-
   const audioCapture = useRef<RealtimeAudioCapture | null>(null);
   const websocket = useRef<WebSocket | null>(null);
   const feedbackEndRef = useRef<HTMLDivElement | null>(null);
@@ -126,13 +115,13 @@ const Recorder = forwardRef<RecorderHandle, RecorderProps>(function Recorder(
       };
 
       audioCapture.current = new RealtimeAudioCapture({
-        sampleRate: 16000,
-        bufferSize: 4096,
-        onAudioData: (audioData: Int16Array) => {
+        sampleRate: 16000, // best sample rate for speech recognition
+        bufferSize: 4096, // tell us how many samples to collect before sending to the server
+        onAudioData: (audioData: Int16Array) => {  
           if (websocket.current?.readyState === WebSocket.OPEN) {
             const bytes = new Uint8Array(audioData.buffer);
-            const base64 = btoa(String.fromCharCode(...bytes));
-            websocket.current.send(JSON.stringify({ audio: base64 }));
+            const base64 = btoa(String.fromCharCode(...bytes)); // converts the audio data to base64
+            websocket.current.send(JSON.stringify({ audio: base64 })); // sends the audio data to the backend server at /stream_audio
           }
         },
         onError: (error) => {
@@ -148,9 +137,7 @@ const Recorder = forwardRef<RecorderHandle, RecorderProps>(function Recorder(
     }
   }, []);
 
-  useImperativeHandle(
-    ref,
-    () => ({
+  useImperativeHandle(ref, () => ({ // allows us to access the startRecording and stopRecording functions from the parent component
       startRecording,
       stopRecording
     }),

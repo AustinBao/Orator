@@ -1,9 +1,9 @@
-import NavBar from '../components/NavBar'
-import Hero from '../components/Hero'
-import ProductDescription from '../components/ProductDescription'
-import AboutUs from '../components/AboutUs'
-import HowItWorks from '../components/HowItWorks'
-import Footer from '../components/Footer'
+import NavBar from '../components/home/NavBar'
+import Hero from '../components/home/Hero'
+import ProductDescription from '../components/home/ProductDescription'
+import AboutUs from '../components/home/AboutUs'
+import HowItWorks from '../components/home/HowItWorks'
+import Footer from '../components/home/Footer'
 import { useRef } from 'react';
 
 

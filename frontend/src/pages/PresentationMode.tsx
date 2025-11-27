@@ -146,7 +146,7 @@ export default function PresentationMode() {
         gestureKeys.forEach((key) => {
           const current = data[key];
           const previous = lastGestureRef.current[key];
-          if (current === 1 && previous !== 1) {
+          if (current === 1 && previous !== 1) {  // if the current gesture is 1 and the previous gesture is not 1, then we have a new gesture
             const labelMap: Record<string, string> = {
               hipsway: 'Hip sway detected',
               pacing: 'Pacing detected',
